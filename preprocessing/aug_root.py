@@ -389,7 +389,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('-dataset',
                         type=str,
-                        default='USPTO_50K')
+                        default='USPTO-MIT')
     parser.add_argument("-augmentation", type=int, default=1)
     parser.add_argument("-seed", type=int, default=33)
     parser.add_argument("-processes", type=int, default=-1)
@@ -399,12 +399,11 @@ if __name__ == '__main__':
     parser.add_argument("--direction", type=str, default="PtoR")
     args = parser.parse_args()
     print('preprocessing dataset {}...'.format(args.dataset))
-    assert args.dataset in ['USPTO_50K', 'USPTO_full', 'USPTO-MIT']
     print(args)
     datasets = ['test', 'val', 'train']
     random.seed(args.seed)
-    datadir = './dataset/{}'.format(args.dataset)
-    savedir = './dataset/{}_{}_aug{}'.format(args.dataset, args.direction, args.augmentation)
+    datadir = './data/{}'.format(args.dataset)
+    savedir = './data/{}_{}_aug{}'.format(args.dataset, args.direction, args.augmentation)
     savedir += args.postfix
     if not os.path.exists(savedir):
         os.makedirs(savedir)
@@ -423,11 +422,11 @@ if __name__ == '__main__':
             if args.dataset == 'ecreact':
                 ec_list = list(map(lambda x: x.split(' ')[1], reaction_list))
                 ec_list = list(map(lambda x: x.strip(), ec_list))
-                with open(os.path.join(datadir, f"ec-{data_set}.txt"), "w") as f:
+                with open(os.path.join(save_dir, f"ec-{data_set}.txt"), "w") as f:
                     for ec in ec_list:
                         for _ in range(args.augmentation):
                             f.write(f"{ec}\n")
-            if args.directio == "PtoR":
+            if args.direction == "PtoR":
                 multiple_product_indices = [i for i in range(len(product_smarts_list)) if "." in product_smarts_list[i]]
                 for index in multiple_product_indices:
                     products = product_smarts_list[index].split(".")

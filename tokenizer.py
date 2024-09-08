@@ -8,10 +8,11 @@ def encode_bos_eos_pad(tokenizer, text, max_length):
     if len(tokens) > max_length - 2:
         return None, None
     tokens = [tokenizer.bos_token_id] + tokens + [tokenizer.eos_token_id]
+    n_tokens = len(tokens)
     padding_length = max_length - len(tokens)
     if padding_length > 0:
         tokens = tokens + [tokenizer.pad_token_id] * padding_length
-    mask = [1] * len(tokens) + [0] * padding_length
+    mask = [1] * n_tokens + [0] * padding_length
     tokens = torch.tensor(tokens)
     mask = torch.tensor(mask)
     return tokens, mask
@@ -36,7 +37,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--vocab_size", type=int, default=512)
     parser.add_argument("--tokenizer_file", default="data/tokenizer.json", type=str)
-    parser.add_argument("--datasets", default=['ecreact', 'USPTO-MIT'], type=str, nargs='+')
+    parser.add_argument("--datasets", default=['USPTO-MIT_PtoR_aug5','USPTO-MIT_RtoP_aug5','ecreact_PtoR_aug10','ecreact_PtoR_aug10'], type=str, nargs='+')
     args = parser.parse_args()
 
     train_tokenizer(args.vocab_size, args.tokenizer_file, args.datasets)

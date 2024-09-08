@@ -50,6 +50,13 @@ class CustomDataset(Dataset):
             ec_lines = [self.ec_to_id[ec] for ec in ec_lines]
         else:
             ec_lines = [0] * len(src_lines)
+
+        if self.shuffle:
+            src_lines, tgt_lines, ec_lines = shuffle_lists(src_lines, tgt_lines, ec_lines)
+        if self.sample_size is not None:
+            src_lines = src_lines[:self.sample_size]
+            tgt_lines = tgt_lines[:self.sample_size]
+            ec_lines = ec_lines[:self.sample_size]
         input_ids = []
         attention_masks = []
         labels = []
@@ -69,15 +76,6 @@ class CustomDataset(Dataset):
             labels.append(label)
             meta_values.append(torch.tensor([ec]))
         print(f"Dataset :{input_base}, split: {split}, skipped: {skip_count}/{len(src_lines)}")
-        if self.shuffle:
-            input_ids, attention_masks, labels, meta_values = shuffle_lists(input_ids, attention_masks, labels,
-                                                                            meta_values)
-
-        if self.sample_size is not None:
-            input_ids = input_ids[:self.sample_size]
-            attention_masks = attention_masks[:self.sample_size]
-            labels = labels[:self.sample_size]
-            meta_values = meta_values[:self.sample_size]
 
         self.input_ids.extend(input_ids)
         self.attention_masks.extend(attention_masks)
