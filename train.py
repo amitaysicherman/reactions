@@ -101,11 +101,11 @@ if __name__ == "__main__":
     parser.add_argument("--size", type=str, default="s", help="Size of the model to train",
                         choices=["xs", 's', "m", "l", "xl"])
     parser.add_argument("--max_length", default=128, type=int)
-    parser.add_argument("--datasets", default=0, type=str, nargs='+')
+    parser.add_argument("--datasets", default=["USPTO-MIT_RtoP_aug5"], type=str, nargs='+')
     parser.add_argument("--tokenizer_file", default="data/tokenizer.json", type=str)
     parser.add_argument("--meta_type", default=0, type=int)
     parser.add_argument("--debug_mode", default=0, type=int)
-    parser.add_argument("--batch_size", default=0, type=int)
+    parser.add_argument("--batch_size", default=64, type=int)
     args = parser.parse_args()
 
     run_name = args_to_name(args)
@@ -127,8 +127,7 @@ if __name__ == "__main__":
 
     train_dataset = CustomDataset(args.datasets, "train", tokenizer, max_length, sample_size=sample_size)
 
-    train_small_dataset = CustomDataset(args.datasets, "train", tokenizer, max_length, sample_size=sample_size)
-    valid_dataset_small = CustomDataset(args.datasets, "valid", tokenizer, max_length, sample_size=sample_size)
+    valid_dataset_small = CustomDataset(args.datasets, "val", tokenizer, max_length, sample_size=sample_size)
     gen_split = "train" if debug_mode else "test"
     test_dataset = CustomDataset(args.datasets, "test", tokenizer, max_length, sample_size=sample_size, shuffle=False)
     test_dataloader = DataLoader(test_dataset, batch_size=batch_size // 2, shuffle=False)
@@ -162,7 +161,7 @@ if __name__ == "__main__":
         model=model,
         args=training_args,
         train_dataset=train_dataset,
-        eval_dataset={"validation": valid_dataset_small, "train": train_small_dataset},
+        eval_dataset={"validation": valid_dataset_small},
         tokenizer=tokenizer,
         compute_metrics=compute_metrics,
     )

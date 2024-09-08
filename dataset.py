@@ -2,6 +2,8 @@ import torch
 import os
 from torch.utils.data import Dataset
 import numpy as np
+from tqdm import tqdm
+from tokenizer import encode_bos_eos_pad
 
 
 def shuffle_lists(*ls):
@@ -12,15 +14,17 @@ def shuffle_lists(*ls):
 
 class CustomDataset(Dataset):
     def __init__(self, datasets, split, tokenizer, max_length=128, seed=42, sample_size=None, shuffle=True,
-                 ec_path="data/ec_to_id.csv"):
+                 ec_path="data/ec_to_id.txt"):
         self.tokenizer = tokenizer
         self.load_ec_mapping(ec_path)
         np.random.seed(seed)
         self.sample_size = sample_size
         self.shuffle = shuffle
         self.input_ids = []
+        self.attention_masks = []
         self.labels = []
         self.meta_values = []
+        self.max_length = max_length
         for ds in datasets:
             self.load_dataset(f"data/{ds}", split)
         if shuffle:
@@ -47,34 +51,36 @@ class CustomDataset(Dataset):
         else:
             ec_lines = [0] * len(src_lines)
         input_ids = []
+        attention_masks = []
         labels = []
         meta_values = []
-        pad_end_token = [self.tokenizer.pad_token_id, self.tokenizer.eos_token_id]
+
         skip_count = 0
-        for src, tgt, ec in zip(src_lines, tgt_lines, ec_lines):
-            src_tokens = self.tokenizer(src, max_length=self.max_length, truncation=True, padding='max_length',
-                                        return_tensors="pt", add_special_tokens=True)
-            tgt_tokens = self.tokenizer(tgt, max_length=self.max_length, truncation=True, padding='max_length',
-                                        return_tensors="pt", add_special_tokens=True)
-
-            input_id = src_tokens['input_ids'][0]
-            label = tgt_tokens['input_ids'][0]
-
-            if input_id[-1] not in pad_end_token and label[-1] not in pad_end_token:
-                input_ids.append(input_id)
-                labels.append(label)
-                meta_values.append(torch.tensor([ec]))
-            else:
+        for src, tgt, ec in tqdm(zip(src_lines, tgt_lines, ec_lines), total=len(src_lines)):
+            input_id, attention_mask = encode_bos_eos_pad(self.tokenizer, src, self.max_length)
+            label, label_mask = encode_bos_eos_pad(self.tokenizer, tgt, self.max_length)
+            if input_id is None or label is None:
                 skip_count += 1
+                continue
+
+            label[label_mask == 0] = -100
+            input_ids.append(input_id)
+            attention_masks.append(attention_mask)
+            labels.append(label)
+            meta_values.append(torch.tensor([ec]))
         print(f"Dataset :{input_base}, split: {split}, skipped: {skip_count}/{len(src_lines)}")
         if self.shuffle:
-            input_ids, labels, meta_values = shuffle_lists(input_ids, labels, meta_values)
+            input_ids, attention_masks, labels, meta_values = shuffle_lists(input_ids, attention_masks, labels,
+                                                                            meta_values)
 
         if self.sample_size is not None:
             input_ids = input_ids[:self.sample_size]
+            attention_masks = attention_masks[:self.sample_size]
             labels = labels[:self.sample_size]
             meta_values = meta_values[:self.sample_size]
+
         self.input_ids.extend(input_ids)
+        self.attention_masks.extend(attention_masks)
         self.labels.extend(labels)
         self.meta_values.extend(meta_values)
 
@@ -82,5 +88,5 @@ class CustomDataset(Dataset):
         return len(self.input_ids)
 
     def __getitem__(self, idx):
-        return {"input_ids": self.input_ids[idx], "labels": self.labels[idx], "meta": self.meta_values[idx]}
-
+        return {"input_ids": self.input_ids[idx], 'attention_mask': self.attention_masks[idx],
+                "labels": self.labels[idx], "meta": self.meta_values[idx]}
