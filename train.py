@@ -40,7 +40,10 @@ def eval_gen(model, tokenizer, dataloader):
             labels = [l[l != -100] for l in labels_]
 
             attention_mask = batch['attention_mask'].to(model.device)
+
             meta = batch['meta'].to(model.device)
+            print(meta.shape)
+            meta = meta.float()
             outputs = model.generate(input_ids=input_ids, attention_mask=attention_mask, meta=meta,
                                      max_length=tokenizer.model_max_length, do_sample=False, num_beams=10)
 
@@ -139,12 +142,13 @@ if __name__ == "__main__":
 
     sample_size = 10 if debug_mode else None
     shuffle = not debug_mode
-    train_dataset = CustomDataset(args.datasets, "train", tokenizer, max_length, sample_size=sample_size, shuffle=shuffle)
+    train_dataset = CustomDataset(args.datasets, "train", tokenizer, max_length, sample_size=sample_size,
+                                  shuffle=shuffle)
 
     valid_dataset_small = CustomDataset(args.datasets, "val", tokenizer, max_length, sample_size=sample_size)
     gen_split = "train" if debug_mode else "val"
     gen_dataset = CustomDataset(args.datasets, gen_split, tokenizer, max_length, sample_size=sample_size,
-                                 shuffle=False)
+                                shuffle=False)
     gen_dataloader = DataLoader(gen_dataset, batch_size=batch_size // 2, shuffle=False)
 
     training_args = TrainingArguments(

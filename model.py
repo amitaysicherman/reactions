@@ -48,16 +48,11 @@ class CustomTranslationModel(T5ForConditionalGeneration):
             )
 
         encoder_embedding = encoder_outputs.last_hidden_state
+        meta_type = torch.where(meta == 0, torch.tensor(0), torch.tensor(1)).to(encoder_embedding.device)
+        meta_embedding = self.meta_embedding(meta_type)
+        emb_to_add = [meta_embedding]
 
-        emb_to_add = []
-        if self.meta_type == BOOLEAN_META:
-            meta_type = torch.where(meta == 0, torch.tensor(0).to(input_ids.device),
-                                    torch.tensor(1).to(input_ids.device))
-            meta_embedding = self.meta_embedding(meta_type)
-            emb_to_add.append(meta_embedding)
-
-
-        else:  # LOOKUP_META
+        if self.meta_type == LOOKUP_META:
             meta_vector = self.lookup_table(meta)
             meta_vector = self.lookup_proj(meta_vector)
             emb_to_add.append(meta_vector)
@@ -66,7 +61,7 @@ class CustomTranslationModel(T5ForConditionalGeneration):
 
         ones_size = 1 if self.meta_type == BOOLEAN_META else 2
         ones_for_mask = torch.ones((attention_mask.shape[0], ones_size), device=combined_embedding.device)
-        attention_mask = torch.cat([attention_mask, ones_for_mask], dim=1)
+        attention_mask = torch.cat([attention_mask, ones_for_mask], dim=-1)
         outputs = super().forward(
             inputs_embeds=combined_embedding,
             attention_mask=attention_mask,
