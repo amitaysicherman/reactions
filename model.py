@@ -48,7 +48,7 @@ class CustomTranslationModel(T5ForConditionalGeneration):
             )
 
         encoder_embedding = encoder_outputs.last_hidden_state
-        meta_type = torch.where(meta == 0, torch.tensor(0), torch.tensor(1)).to(encoder_embedding.device)
+        meta_type = torch.where(meta == 0, torch.zeros_like(meta), torch.ones_like(meta)).to(encoder_embedding.device)
         meta_embedding = self.meta_embedding(meta_type)
         emb_to_add = [meta_embedding]
 
@@ -75,10 +75,27 @@ class CustomTranslationModel(T5ForConditionalGeneration):
             meta: Optional[torch.LongTensor] = None,
             **kwargs,
     ) -> Union[GenerateOutput, torch.LongTensor]:
-        if self.meta_type == NO_META:
-            return super().generate(**kwargs)
-        else:
-            return super().generate(meta=meta, **kwargs)
+        return super().generate(meta=meta, **kwargs)
+
+    def prepare_inputs_for_generation(
+            self,
+            input_ids,
+            past_key_values=None,
+            attention_mask=None,
+            head_mask=None,
+            decoder_head_mask=None,
+            decoder_attention_mask=None,
+            cross_attn_head_mask=None,
+            use_cache=None,
+            encoder_outputs=None,
+            **kwargs,
+    ):
+        meta = kwargs.pop("meta", None)
+        results = super().prepare_inputs_for_generation(input_ids, past_key_values, attention_mask, head_mask,
+                                                        decoder_head_mask, decoder_attention_mask, cross_attn_head_mask,
+                                                        use_cache, encoder_outputs, **kwargs)
+        results["meta"] = meta
+        return results
 
 
 def build_model_by_size_type(size, meta_type=NO_META, **kwargs):

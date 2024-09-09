@@ -42,8 +42,6 @@ def eval_gen(model, tokenizer, dataloader):
             attention_mask = batch['attention_mask'].to(model.device)
 
             meta = batch['meta'].to(model.device)
-            print(meta.shape)
-            meta = meta.float()
             outputs = model.generate(input_ids=input_ids, attention_mask=attention_mask, meta=meta,
                                      max_length=tokenizer.model_max_length, do_sample=False, num_beams=10)
 
@@ -123,6 +121,12 @@ if __name__ == "__main__":
     parser.add_argument("--meta_type", default=0, type=int)
     parser.add_argument("--debug_mode", default=0, type=int)
     parser.add_argument("--batch_size", default=64, type=int)
+    parser.add_argument("--eval_steps", default=500, type=int)
+    parser.add_argument("--logging_steps", default=500, type=int)
+    parser.add_argument("--save_steps", default=5000, type=int)
+    parser.add_argument("--learning_rate", default=5e-5, type=float)
+    parser.add_argument("--num_train_epochs", default=10, type=int)
+    parser.add_argument("--gen_size", default=500, type=int)
     args = parser.parse_args()
 
     run_name = args_to_name(args)
@@ -147,8 +151,8 @@ if __name__ == "__main__":
 
     valid_dataset_small = CustomDataset(args.datasets, "val", tokenizer, max_length, sample_size=sample_size)
     gen_split = "train" if debug_mode else "val"
-    gen_dataset = CustomDataset(args.datasets, gen_split, tokenizer, max_length, sample_size=sample_size,
-                                shuffle=False)
+    gen_size = 10 if debug_mode else args.gen_size
+    gen_dataset = CustomDataset(args.datasets, gen_split, tokenizer, max_length, sample_size=gen_size, shuffle=False)
     gen_dataloader = DataLoader(gen_dataset, batch_size=batch_size // 2, shuffle=False)
 
     training_args = TrainingArguments(
@@ -156,13 +160,13 @@ if __name__ == "__main__":
         evaluation_strategy="steps",
         per_device_train_batch_size=10 if debug_mode else batch_size,
         per_device_eval_batch_size=10 if debug_mode else batch_size // 8,
-        num_train_epochs=100_000 if debug_mode else 10,
+        num_train_epochs=100_000 if debug_mode else args.num_train_epochs,
 
-        eval_steps=100 if debug_mode else 5000,
-        logging_steps=100 if debug_mode else 500,
-        save_steps=100 if debug_mode else 10000,
+        eval_steps=100 if debug_mode else args.eval_steps,
+        logging_steps=100 if debug_mode else args.logging_steps,
+        save_steps=100 if debug_mode else args.save_steps,
 
-        learning_rate=1e-3 if debug_mode else 5e-5,
+        learning_rate=1e-3 if debug_mode else args.learning_rate,
         logging_first_step=True,
         save_strategy='steps',
         save_total_limit=2,
