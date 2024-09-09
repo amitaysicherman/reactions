@@ -4,7 +4,7 @@ from transformers import Trainer, TrainingArguments
 from transformers import PreTrainedTokenizerFast
 import numpy as np
 import argparse
-from op_emd_model import build_model_by_size_type
+from opt_emd_model import build_model_by_size_type
 from opt_emb_dataset import CustomDataset
 
 
