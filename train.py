@@ -181,7 +181,7 @@ if __name__ == "__main__":
         use_mps_device=False,
         load_best_model_at_end=True,
         metric_for_best_model="validation_token_acc",
-        report_to='tensorboard',
+        report_to='none' if debug_mode else 'tensorboard',
         run_name=run_name,
     )
 

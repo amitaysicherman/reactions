@@ -29,7 +29,6 @@ class CustomDataset(Dataset):
             self.load_dataset(f"data/{ds}", split)
         if shuffle:
             self.input_ids, self.labels, self.meta_values = shuffle_lists(self.input_ids, self.labels, self.meta_values)
-        self.max_length = max_length
 
     def load_ec_mapping(self, ec_path):
         ec_to_id = dict()
