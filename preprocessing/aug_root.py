@@ -436,9 +436,8 @@ if __name__ == '__main__':
                         for _ in range(args.augmentation):
                             f.write(f"{ec}\n")
                 # remove stereochemistry:
-                reactant_smarts_list = list(map(lambda x: clear_stereochemistry(x), reactant_smarts_list))
-                product_smarts_list = list(map(lambda x: clear_stereochemistry(x), product_smarts_list))
-
+                reactant_smarts_list = list(map(clear_stereochemistry, reactant_smarts_list))
+                product_smarts_list = list(map(clear_stereochemistry, product_smarts_list))
             if args.direction == "PtoR":
                 multiple_product_indices = [i for i in range(len(product_smarts_list)) if "." in product_smarts_list[i]]
                 for index in multiple_product_indices:
