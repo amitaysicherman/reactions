@@ -127,6 +127,7 @@ if __name__ == "__main__":
     parser.add_argument("--learning_rate", default=5e-5, type=float)
     parser.add_argument("--num_train_epochs", default=10, type=int)
     parser.add_argument("--gen_size", default=500, type=int)
+    parser.add_argument("--eval_size", default=10000, type=int)
     args = parser.parse_args()
 
     run_name = args_to_name(args)
@@ -145,11 +146,15 @@ if __name__ == "__main__":
     print(f"Trainable parameters: {params:,}")
 
     sample_size = 10 if debug_mode else None
+    eval_sample_size = 10 if debug_mode else args.eval_size
+
     shuffle = not debug_mode
     train_dataset = CustomDataset(args.datasets, "train", tokenizer, max_length, sample_size=sample_size,
                                   shuffle=shuffle)
 
-    valid_dataset_small = CustomDataset(args.datasets, "val", tokenizer, max_length, sample_size=sample_size)
+    train_dataset_small = CustomDataset(args.datasets, "train", tokenizer, max_length, sample_size=eval_sample_size)
+    valid_dataset_small = CustomDataset(args.datasets, "val", tokenizer, max_length, sample_size=eval_sample_size)
+
     gen_split = "train" if debug_mode else "val"
     gen_size = 10 if debug_mode else args.gen_size
     gen_dataset = CustomDataset(args.datasets, gen_split, tokenizer, max_length, sample_size=gen_size, shuffle=False)
@@ -184,7 +189,7 @@ if __name__ == "__main__":
         model=model,
         args=training_args,
         train_dataset=train_dataset,
-        eval_dataset={"validation": valid_dataset_small, "train": train_dataset},
+        eval_dataset={"validation": valid_dataset_small, "train": train_dataset_small},
         tokenizer=tokenizer,
         compute_metrics=lambda x: compute_metrics(x, model, tokenizer, gen_dataloader),
     )
