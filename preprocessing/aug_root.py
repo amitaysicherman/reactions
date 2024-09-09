@@ -12,6 +12,15 @@ from rdkit import RDLogger
 RDLogger.DisableLog('rdApp.*')
 
 
+def clear_stereochemistry(smi):
+    mol = Chem.MolFromSmiles(smi)
+    if mol is not None:
+        Chem.RemoveStereochemistry(mol)
+        return Chem.MolToSmiles(mol)
+    else:
+        return smi
+
+
 def smi_tokenizer(smi):
     pattern = "(\[[^\]]+]|Br?|Cl?|N|O|S|P|F|I|b|c|n|o|s|p|\(|\)|\.|=|#|-|\+|\\\\|\/|:|~|@|\?|>|\*|\$|\%[0-9]{2}|[0-9])"
     regex = re.compile(pattern)
@@ -426,6 +435,10 @@ if __name__ == '__main__':
                     for ec in ec_list:
                         for _ in range(args.augmentation):
                             f.write(f"{ec}\n")
+                # remove stereochemistry:
+                reactant_smarts_list = list(map(lambda x: clear_stereochemistry(x), reactant_smarts_list))
+                product_smarts_list = list(map(lambda x: clear_stereochemistry(x), product_smarts_list))
+
             if args.direction == "PtoR":
                 multiple_product_indices = [i for i in range(len(product_smarts_list)) if "." in product_smarts_list[i]]
                 for index in multiple_product_indices:
