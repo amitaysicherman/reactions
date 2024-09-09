@@ -1,31 +1,46 @@
 from rdkit import Chem
+from tqdm import tqdm
 
-org_dataset = "/Users/amitay.s/PycharmProjects/reactions/data/USPTO-MIT_RtoP_aug5"
-enz_dataset = "/Users/amitay.s/PycharmProjects/reactions/data/ecreact_PtoR_aug10"
-org_products = []
-enz_products = []
-for split in ["train", "val", "test"]:
-    with open(f"{org_dataset}/{split}/tgt-{split}.txt") as f:
-        org_products.extend(f.read().splitlines())
-    with open(f"{enz_dataset}/{split}/tgt-{split}.txt") as f:
-        enz_products.extend(f.read().splitlines())
+from rdkit import RDLogger
+
+RDLogger.DisableLog('rdApp.*')
 
 
-def convert_to_canonical_smiles(smiles):
+def convert_to_canonical_smiles(smiles, single_product=False):
     smiles = smiles.strip()
     smiles = smiles.replace(" ", "")
+    if single_product and "." in smiles:
+        return None
     mol = Chem.MolFromSmiles(smiles)
     if mol is None:
         return None
     return Chem.MolToSmiles(mol, canonical=True)
 
 
-org_dataset = [convert_to_canonical_smiles(smiles) for smiles in org_products]
-org_dataset = {smiles for smiles in org_dataset if smiles is not None}
-enz_dataset = [convert_to_canonical_smiles(smiles) for smiles in enz_products]
-enz_dataset = {smiles for smiles in enz_dataset if smiles is not None}
-print(f"Original dataset products: {len(org_dataset):,}")
-print(f"Enzyme dataset products: {len(enz_dataset):,}")
+def get_dataset_molecules(dataset_path):
+    elements = []
+    for split in ["train", "val", "test"]:
+        with open(f"{dataset_path}/{split}/tgt-{split}.txt") as f:
+            elements.extend(f.read().splitlines())
+    dataset = []
+    filter_count = 0
+    for smiles in tqdm(elements):
+        mol = convert_to_canonical_smiles(smiles)
+        if mol is not None:
+            dataset.append(mol)
+        else:
+            filter_count += 1
+
+    dataset_unique = {smiles for smiles in dataset if smiles is not None}
+    print(f"Dataset {dataset_path} products: {len(dataset):,} ({filter_count:,} filtered) -> {len(dataset_unique):,}")
+    return dataset_unique
+
+
+org_dataset = "../data/USPTO-MIT_RtoP_aug5"
+enz_dataset = "../data/ecreact_PtoR_aug10"
+
+org_dataset = get_dataset_molecules(org_dataset)
+enz_dataset = get_dataset_molecules(enz_dataset)
 
 print(f"Original dataset and enzyme dataset products: {len(org_dataset & enz_dataset):,}")
 print(f"Original dataset products not in enzyme dataset: {len(org_dataset - enz_dataset):,}")
