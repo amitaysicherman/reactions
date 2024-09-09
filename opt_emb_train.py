@@ -44,7 +44,6 @@ if __name__ == "__main__":
     parser.add_argument("--save_steps", default=5000, type=int)
     parser.add_argument("--learning_rate", default=5e-5, type=float)
     parser.add_argument("--num_train_epochs", default=10, type=int)
-    parser.add_argument("--gen_size", default=500, type=int)
     parser.add_argument("--eval_size", default=10000, type=int)
     args = parser.parse_args()
 

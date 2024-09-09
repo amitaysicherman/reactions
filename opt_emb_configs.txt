@@ -1,0 +1,6 @@
+--datasets USPTO-MIT_PtoR_aug5
+--datasets USPTO-MIT_RtoP_aug5
+--datasets ecreact_PtoR_aug10 --max_length 256 --batch_size 32
+--datasets ecreact_RtoP_aug10 --max_length 256 --batch_size 32
+--datasets ecreact_PtoR_aug10 USPTO-MIT_PtoR_aug5 --max_length 256 --batch_size 32
+--datasets ecreact_RtoP_aug10 USPTO-MIT_RtoP_aug5 --max_length 256 --batch_size 32
