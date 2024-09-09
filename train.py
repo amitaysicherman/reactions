@@ -121,7 +121,7 @@ if __name__ == "__main__":
     parser.add_argument("--meta_type", default=0, type=int)
     parser.add_argument("--debug_mode", default=0, type=int)
     parser.add_argument("--batch_size", default=64, type=int)
-    parser.add_argument("--eval_steps", default=500, type=int)
+    parser.add_argument("--eval_steps", default=5000, type=int)
     parser.add_argument("--logging_steps", default=500, type=int)
     parser.add_argument("--save_steps", default=5000, type=int)
     parser.add_argument("--learning_rate", default=5e-5, type=float)
