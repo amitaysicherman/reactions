@@ -171,9 +171,9 @@ if __name__ == "__main__":
                                   shuffle=shuffle)
 
     train_dataset_small = CustomDataset(args.datasets, "train", tokenizer, max_length, sample_size=eval_sample_size,
-                                        shuffle=False)
+                                        shuffle=shuffle)
     valid_dataset_small = CustomDataset(args.datasets, "val", tokenizer, max_length, sample_size=eval_sample_size,
-                                        shuffle=False)
+                                        shuffle=shuffle)
 
     gen_split = "train" if debug_mode else "val"
     gen_size = 10 if debug_mode else args.gen_size
