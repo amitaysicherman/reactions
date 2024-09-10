@@ -9,6 +9,7 @@ from transformers.generation.utils import GenerateOutput
 NO_META = 0
 BOOLEAN_META = 1
 LOOKUP_META = 2
+ADD_META = 3
 
 
 class CustomTranslationConfig(T5Config):
@@ -24,7 +25,7 @@ class CustomTranslationModel(T5ForConditionalGeneration):
         meta_type = config.meta_type
         if meta_type != NO_META:
             self.meta_embedding = nn.Embedding(2, config.d_model)  # Embedding for meta (2 possible values)
-        if meta_type == LOOKUP_META:
+        if meta_type == LOOKUP_META or meta_type == ADD_META:
             lookup_table = np.load(config.lookup_file)
             lookup_dim = lookup_table.shape[1]
             self.lookup_table = nn.Embedding.from_pretrained(torch.tensor(lookup_table), freeze=True).float()
@@ -48,21 +49,26 @@ class CustomTranslationModel(T5ForConditionalGeneration):
             )
 
             encoder_embedding = encoder_outputs.last_hidden_state
-            meta_type = torch.where(meta == 0, torch.zeros_like(meta), torch.ones_like(meta)).to(encoder_embedding.device)
-            meta_embedding = self.meta_embedding(meta_type)
-            emb_to_add = [meta_embedding]
+            emb_to_add = []
 
-            if self.meta_type == LOOKUP_META:
+            if self.meta_type == BOOLEAN_META or self.meta_type == LOOKUP_META:
+                meta_type = torch.where(meta == 0, torch.zeros_like(meta), torch.ones_like(meta))
+                meta_type = meta_type.to(encoder_embedding.device)
+                emb_to_add.append(self.meta_embedding(meta_type))
+            if self.meta_type == LOOKUP_META or self.meta_type == ADD_META:
                 meta_vector = self.lookup_table(meta)
                 meta_vector = self.lookup_proj(meta_vector)
                 emb_to_add.append(meta_vector)
 
-            combined_embedding = torch.cat([encoder_embedding] + emb_to_add, dim=1)
-
-            ones_size = 1 if self.meta_type == BOOLEAN_META else 2
-            ones_for_mask = torch.ones((attention_mask.shape[0], ones_size), device=combined_embedding.device)
-            attention_mask = torch.cat([attention_mask, ones_for_mask], dim=-1)
-            encoder_outputs.last_hidden_state = combined_embedding
+            if self.meta_type == BOOLEAN_META or self.meta_type == LOOKUP_META:
+                combined_embedding = torch.cat([encoder_embedding] + emb_to_add, dim=1)
+                ones_size = 1 if self.meta_type == BOOLEAN_META else 2
+                ones_for_mask = torch.ones((attention_mask.shape[0], ones_size), device=combined_embedding.device)
+                attention_mask = torch.cat([attention_mask, ones_for_mask], dim=-1)
+                encoder_outputs.last_hidden_state = combined_embedding
+            else:  # self.meta_type==ADD_META
+                assert len(emb_to_add) == 1
+                encoder_outputs.last_hidden_state = encoder_embedding + emb_to_add[0]
         outputs = super().forward(
             encoder_outputs=encoder_outputs,
             attention_mask=attention_mask.float(),

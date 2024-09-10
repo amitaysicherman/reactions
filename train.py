@@ -112,12 +112,6 @@ def args_to_name(args):
     return f"ds-{datasets}_s-{args.size}_m-{args.meta_type}_l-{args.max_length}_b-{args.batch_size}"
 
 
-"""
- - meta_embedding.weight
- - lookup_table.weight
- - lookup_proj.weight
- - lookup_proj.bias
-"""
 not_freeze = ("meta_embedding.weight", "lookup_proj.weight", "lookup_proj.bias")
 keep_freeze = ("lookup_table.weight")
 
