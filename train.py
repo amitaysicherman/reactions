@@ -128,8 +128,7 @@ def freeze_layers(model, not_freeze_layers=not_freeze):
             print(f"Freezing layer: {name}")
             param.requires_grad = False
         else:
-            print(f"Keeping layer frozen: {name}")
-
+            print(f"Keeping layer same: {name}")
 
 def unfreeze_all_layers(save_freeze_layers=keep_freeze):
     for name, param in model.named_parameters():
@@ -137,7 +136,7 @@ def unfreeze_all_layers(save_freeze_layers=keep_freeze):
             print(f"Unfreezing layer: {name}")
             param.requires_grad = True
         else:
-            print(f"Keeping layer frozen: {name}")
+            print(f"Keeping layer same: {name}")
 
 
 class UnfreezeCallback(TrainerCallback):
@@ -148,7 +147,6 @@ class UnfreezeCallback(TrainerCallback):
 
     def on_epoch_end(self, args, state, control, **kwargs):
         # Check if the current epoch matches the specified number of freeze_epochs
-        print(f"Epoch: {state.epoch}")
         if state.epoch == self.unfreeze_epoch:
             print("Unfreezing all layers")
             unfreeze_all_layers()
