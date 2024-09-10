@@ -147,7 +147,7 @@ if __name__ == "__main__":
     print(f"Trainable parameters: {params:,}")
 
     if args.model_cp:
-        model.load_state_dict(torch.load(args.model_cp))
+        model.load_state_dict(torch.load(args.model_cp,map_location=torch.device('cpu')))
     sample_size = 10 if debug_mode else None
     eval_sample_size = 10 if debug_mode else args.eval_size
 
