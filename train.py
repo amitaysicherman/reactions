@@ -128,7 +128,7 @@ if __name__ == "__main__":
     parser.add_argument("--num_train_epochs", default=10, type=int)
     parser.add_argument("--gen_size", default=500, type=int)
     parser.add_argument("--eval_size", default=10000, type=int)
-    parser.add_argument("--start_cp", default="", type=str)
+    parser.add_argument("--model_cp", default="", type=str)
     args = parser.parse_args()
 
     run_name = args_to_name(args)
@@ -146,6 +146,8 @@ if __name__ == "__main__":
     params = sum([np.prod(p.size()) for p in model.parameters() if p.requires_grad])
     print(f"Trainable parameters: {params:,}")
 
+    if args.model_cp:
+        model.load_state_dict(torch.load(args.model_cp))
     sample_size = 10 if debug_mode else None
     eval_sample_size = 10 if debug_mode else args.eval_size
 
@@ -197,4 +199,4 @@ if __name__ == "__main__":
         compute_metrics=lambda x: compute_metrics(x, model, tokenizer, gen_dataloader),
     )
 
-    trainer.train(resume_from_checkpoint=None if not args.start_cp else args.start_cp)
+    trainer.train()
