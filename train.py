@@ -179,9 +179,10 @@ if __name__ == "__main__":
     gen_size = 10 if debug_mode else args.gen_size
     gen_dataset = CustomDataset(args.datasets, gen_split, tokenizer, max_length, sample_size=gen_size, shuffle=False)
     gen_dataloader = DataLoader(gen_dataset, batch_size=batch_size // 2, shuffle=False)
+    results_dir = "./results_trans/" if args.model_cp else "./results/"
 
     training_args = TrainingArguments(
-        output_dir='./results/' + run_name,
+        output_dir=results_dir + run_name,
         evaluation_strategy="steps",
         per_device_train_batch_size=10 if debug_mode else batch_size,
         per_device_eval_batch_size=10 if debug_mode else batch_size // 8,
