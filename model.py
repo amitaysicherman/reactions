@@ -62,8 +62,9 @@ class CustomTranslationModel(T5ForConditionalGeneration):
         ones_size = 1 if self.meta_type == BOOLEAN_META else 2
         ones_for_mask = torch.ones((attention_mask.shape[0], ones_size), device=combined_embedding.device)
         attention_mask = torch.cat([attention_mask, ones_for_mask], dim=-1)
+        encoder_outputs.last_hidden_state = combined_embedding
         outputs = super().forward(
-            encoder_outputs=combined_embedding,
+            encoder_outputs=encoder_outputs,
             attention_mask=attention_mask,
             labels=labels,
             **kwargs
