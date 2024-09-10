@@ -215,4 +215,8 @@ if __name__ == "__main__":
         compute_metrics=lambda x: compute_metrics(x, model, tokenizer, gen_dataloader),
     )
 
+    # run evaluation before training
+    eval_results = trainer.evaluate()
+    print(eval_results)
+
     trainer.train()

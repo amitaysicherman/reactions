@@ -47,25 +47,25 @@ class CustomTranslationModel(T5ForConditionalGeneration):
                 attention_mask=attention_mask,
             )
 
-        encoder_embedding = encoder_outputs.last_hidden_state
-        meta_type = torch.where(meta == 0, torch.zeros_like(meta), torch.ones_like(meta)).to(encoder_embedding.device)
-        meta_embedding = self.meta_embedding(meta_type)
-        emb_to_add = [meta_embedding]
+            encoder_embedding = encoder_outputs.last_hidden_state
+            meta_type = torch.where(meta == 0, torch.zeros_like(meta), torch.ones_like(meta)).to(encoder_embedding.device)
+            meta_embedding = self.meta_embedding(meta_type)
+            emb_to_add = [meta_embedding]
 
-        if self.meta_type == LOOKUP_META:
-            meta_vector = self.lookup_table(meta)
-            meta_vector = self.lookup_proj(meta_vector)
-            emb_to_add.append(meta_vector)
+            if self.meta_type == LOOKUP_META:
+                meta_vector = self.lookup_table(meta)
+                meta_vector = self.lookup_proj(meta_vector)
+                emb_to_add.append(meta_vector)
 
-        combined_embedding = torch.cat([encoder_embedding] + emb_to_add, dim=1)
+            combined_embedding = torch.cat([encoder_embedding] + emb_to_add, dim=1)
 
-        ones_size = 1 if self.meta_type == BOOLEAN_META else 2
-        ones_for_mask = torch.ones((attention_mask.shape[0], ones_size), device=combined_embedding.device)
-        attention_mask = torch.cat([attention_mask, ones_for_mask], dim=-1)
-        encoder_outputs.last_hidden_state = combined_embedding
+            ones_size = 1 if self.meta_type == BOOLEAN_META else 2
+            ones_for_mask = torch.ones((attention_mask.shape[0], ones_size), device=combined_embedding.device)
+            attention_mask = torch.cat([attention_mask, ones_for_mask], dim=-1)
+            encoder_outputs.last_hidden_state = combined_embedding
         outputs = super().forward(
             encoder_outputs=encoder_outputs,
-            attention_mask=attention_mask,
+            attention_mask=attention_mask.float(),
             labels=labels,
             **kwargs
         )
