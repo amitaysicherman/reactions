@@ -147,7 +147,22 @@ if __name__ == "__main__":
     print(f"Trainable parameters: {params:,}")
 
     if args.model_cp:
-        model.load_state_dict(torch.load(args.model_cp,map_location=torch.device('cpu')))
+        loaded_state_dict = torch.load(args.model_cp, map_location=torch.device('cpu'))
+        model_state_dict = model.state_dict()
+        missing_keys, unexpected_keys = model.load_state_dict(loaded_state_dict, strict=False)
+        if missing_keys:
+            print("The following keys are missing in the loaded state dict and were not loaded:")
+            for key in missing_keys:
+                print(f" - {key}")
+        else:
+            print("All keys were found in the loaded state dict.")
+
+        if unexpected_keys:
+            print("The following keys in the loaded state dict were not expected by the model:")
+            for key in unexpected_keys:
+                print(f" - {key}")
+        else:
+            print("No unexpected keys were found in the loaded state dict.")
     sample_size = 10 if debug_mode else None
     eval_sample_size = 10 if debug_mode else args.eval_size
 
