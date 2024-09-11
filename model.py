@@ -25,10 +25,11 @@ def get_layers(dims, dropout=0.0):
 
 
 class CustomTranslationConfig(T5Config):
-    def __init__(self, meta_type=NO_META, lookup_file="data/prot_emb.npy", **kwargs):
+    def __init__(self, meta_type=NO_META, lookup_file="data/prot_emb.npy", lookup_len=4, **kwargs):
         super(CustomTranslationConfig, self).__init__(**kwargs)
         self.meta_type = meta_type
         self.lookup_file = lookup_file
+        self.lookup_len = lookup_len
 
 
 class CustomTranslationModel(T5ForConditionalGeneration):
@@ -41,7 +42,8 @@ class CustomTranslationModel(T5ForConditionalGeneration):
             lookup_table = np.load(config.lookup_file)
             lookup_dim = lookup_table.shape[1]
             self.lookup_table = nn.Embedding.from_pretrained(torch.tensor(lookup_table), freeze=True).float()
-            self.lookup_proj = get_layers([lookup_dim, lookup_dim, config.d_model, config.d_model], dropout=0.1)
+            layers_dims = [lookup_dim] + [config.d_model] * config.lookup_len
+            self.lookup_proj = get_layers(layers_dims, dropout=0.1)
         self.meta_type = meta_type
 
     def forward(self, input_ids=None, attention_mask=None, meta=None, labels=None, encoder_outputs=None, **kwargs):
@@ -69,7 +71,7 @@ class CustomTranslationModel(T5ForConditionalGeneration):
                 emb_to_add.append(self.meta_embedding(meta_type))
             if self.meta_type == LOOKUP_META or self.meta_type == ADD_META:
                 meta_vector = self.lookup_table(meta)
-                meta_vector = self.lookup_proj(meta_vector)
+                meta_vector = self.lookup_proj(meta_vector.squeeze(1)).unsqueeze(1)
                 emb_to_add.append(meta_vector)
 
             if self.meta_type == BOOLEAN_META or self.meta_type == LOOKUP_META:
@@ -123,18 +125,23 @@ def build_model_by_size_type(size, meta_type=NO_META, **kwargs):
         ff = 64
         n_heads = 2
         n_layers = 2
+        lookup_len = 1
 
     elif size == "s":
         d_model = 64
         ff = 128
         n_heads = 4
         n_layers = 4
+        lookup_len = 2
+
 
     elif size == "m":
         d_model = 256
         ff = 512
         n_heads = 8
         n_layers = 6
+        lookup_len = 4
+
 
 
     elif size == "l":
@@ -142,12 +149,15 @@ def build_model_by_size_type(size, meta_type=NO_META, **kwargs):
         ff = 1024
         n_heads = 8
         n_layers = 8
+        lookup_len = 5
+
 
     else:  # args.size == "xl":
         d_model = 1024
         ff = 2048
         n_heads = 12
         n_layers = 8
+        lookup_len = 7
 
     config = CustomTranslationConfig(
         d_model=d_model,  # Hidden size for T5 Medium
@@ -163,6 +173,7 @@ def build_model_by_size_type(size, meta_type=NO_META, **kwargs):
         relative_attention_num_buckets=32,  # Set number of buckets for relative attention
         num_layers=n_layers,
         meta_type=meta_type,
+        lookup_len=lookup_len,
         **kwargs
     )
     return CustomTranslationModel(config)
