@@ -181,11 +181,11 @@ if __name__ == "__main__":
     model = build_model_by_size_type(args.size, args.meta_type, **tokenizer_config_args)
     params = sum([np.prod(p.size()) for p in model.parameters() if p.requires_grad])
     print(f"Trainable parameters: {params:,}")
-    if args.model_cp:
-        for param in model.encoder.parameters():
-            param.requires_grad = False
-        print("Trainable parameters after freezing encoder: ",
-              sum([np.prod(p.size()) for p in model.parameters() if p.requires_grad]))
+    # if args.model_cp:
+    #     for param in model.encoder.parameters():
+    #         param.requires_grad = False
+    #     print("Trainable parameters after freezing encoder: ",
+    #           sum([np.prod(p.size()) for p in model.parameters() if p.requires_grad]))
 
     if args.model_cp:
         loaded_state_dict = torch.load(args.model_cp, map_location=torch.device('cpu'))

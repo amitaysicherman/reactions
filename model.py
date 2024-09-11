@@ -12,6 +12,18 @@ LOOKUP_META = 2
 ADD_META = 3
 
 
+def get_layers(dims, dropout=0.0):
+    layers = torch.nn.Sequential()
+    for i in range(len(dims) - 1):
+        layers.add_module(f"linear_{i}", torch.nn.Linear(dims[i], dims[i + 1]))
+        layers.add_module(f"bn_{i}", torch.nn.BatchNorm1d(dims[i + 1]))
+        if i < len(dims) - 2:
+            layers.add_module(f"relu_{i}", torch.nn.ReLU())
+        if dropout > 0:
+            layers.add_module(f"dropout_{i}", torch.nn.Dropout(dropout))
+    return layers
+
+
 class CustomTranslationConfig(T5Config):
     def __init__(self, meta_type=NO_META, lookup_file="data/prot_emb.npy", **kwargs):
         super(CustomTranslationConfig, self).__init__(**kwargs)
@@ -29,7 +41,7 @@ class CustomTranslationModel(T5ForConditionalGeneration):
             lookup_table = np.load(config.lookup_file)
             lookup_dim = lookup_table.shape[1]
             self.lookup_table = nn.Embedding.from_pretrained(torch.tensor(lookup_table), freeze=True).float()
-            self.lookup_proj = nn.Linear(lookup_dim, config.d_model)
+            self.lookup_proj = get_layers([lookup_dim, lookup_dim, config.d_model, config.d_model], dropout=0.1)
         self.meta_type = meta_type
 
     def forward(self, input_ids=None, attention_mask=None, meta=None, labels=None, encoder_outputs=None, **kwargs):
@@ -62,7 +74,7 @@ class CustomTranslationModel(T5ForConditionalGeneration):
 
             if self.meta_type == BOOLEAN_META or self.meta_type == LOOKUP_META:
                 combined_embedding = torch.cat([encoder_embedding] + emb_to_add, dim=1)
-                ones_size = 1 if self.meta_type == BOOLEAN_META else 2
+                ones_size = len(emb_to_add)
                 ones_for_mask = torch.ones((attention_mask.shape[0], ones_size), device=combined_embedding.device)
                 attention_mask = torch.cat([attention_mask, ones_for_mask], dim=-1)
                 encoder_outputs.last_hidden_state = combined_embedding
