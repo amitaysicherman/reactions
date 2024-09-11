@@ -112,39 +112,39 @@ def args_to_name(args):
     return f"ds-{datasets}_s-{args.size}_m-{args.meta_type}_l-{args.max_length}_b-{args.batch_size}"
 
 
-not_freeze = ("meta_embedding.weight", "lookup_proj.weight", "lookup_proj.bias")
-keep_freeze = ("lookup_table.weight")
-
-
-def freeze_layers(model, not_freeze_layers=not_freeze):
-    for name, param in model.named_parameters():
-        if name not in not_freeze_layers:
-            print(f"Freezing layer: {name}")
-            param.requires_grad = False
-        else:
-            print(f"Keeping layer same: {name}")
-
-def unfreeze_all_layers(save_freeze_layers=keep_freeze):
-    for name, param in model.named_parameters():
-        if name not in save_freeze_layers:
-            print(f"Unfreezing layer: {name}")
-            param.requires_grad = True
-        else:
-            print(f"Keeping layer same: {name}")
-
-
-class UnfreezeCallback(TrainerCallback):
-    def __init__(self, model, unfreeze_epoch=0):
-        super().__init__()
-        self.unfreeze_epoch = unfreeze_epoch
-        self.model = model
-
-    def on_epoch_end(self, args, state, control, **kwargs):
-        # Check if the current epoch matches the specified number of freeze_epochs
-        if state.epoch == self.unfreeze_epoch:
-            print("Unfreezing all layers")
-            unfreeze_all_layers()
-            return control
+# not_freeze = ("meta_embedding.weight", "lookup_proj.weight", "lookup_proj.bias")
+# keep_freeze = ("lookup_table.weight")
+#
+#
+# def freeze_layers(model, not_freeze_layers=not_freeze):
+#     for name, param in model.named_parameters():
+#         if name not in not_freeze_layers:
+#             print(f"Freezing layer: {name}")
+#             param.requires_grad = False
+#         else:
+#             print(f"Keeping layer same: {name}")
+#
+# def unfreeze_all_layers(save_freeze_layers=keep_freeze):
+#     for name, param in model.named_parameters():
+#         if name not in save_freeze_layers:
+#             print(f"Unfreezing layer: {name}")
+#             param.requires_grad = True
+#         else:
+#             print(f"Keeping layer same: {name}")
+#
+#
+# class UnfreezeCallback(TrainerCallback):
+#     def __init__(self, model, unfreeze_epoch=0):
+#         super().__init__()
+#         self.unfreeze_epoch = unfreeze_epoch
+#         self.model = model
+#
+#     def on_epoch_end(self, args, state, control, **kwargs):
+#         # Check if the current epoch matches the specified number of freeze_epochs
+#         if state.epoch == self.unfreeze_epoch:
+#             print("Unfreezing all layers")
+#             unfreeze_all_layers()
+#             return control
 
 
 if __name__ == "__main__":
@@ -251,9 +251,9 @@ if __name__ == "__main__":
         compute_metrics=lambda x: compute_metrics(x, model, tokenizer, gen_dataloader),
     )
 
-    if args.model_cp and args.meta_type != 0:
-        freeze_layers(model)
-        trainer.add_callback(UnfreezeCallback(model, unfreeze_epoch=1))
+    # if args.model_cp and args.meta_type != 0:
+    #     freeze_layers(model)
+    #     trainer.add_callback(UnfreezeCallback(model, unfreeze_epoch=1))
 
     # run evaluation before training
     eval_results = trainer.evaluate()
