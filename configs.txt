@@ -1,14 +1,14 @@
---datasets USPTO-MIT_PtoR_aug5 --meta_type 0
---datasets ecreact_PtoR_aug10 --meta_type 0 --max_length 256 --batch_size 32
---datasets ecreact_PtoR_aug10 --meta_type 2 --max_length 256 --batch_size 32
---datasets ecreact_PtoR_aug10 --meta_type 3 --max_length 256 --batch_size 32
---datasets ecreact_PtoR_aug10 USPTO-MIT_PtoR_aug5 --meta_type 0 --max_length 256 --batch_size 32
---datasets ecreact_PtoR_aug10 USPTO-MIT_PtoR_aug5 --meta_type 2 --max_length 256 --batch_size 32
---datasets ecreact_PtoR_aug10 USPTO-MIT_PtoR_aug5 --meta_type 3 --max_length 256 --batch_size 32
---datasets USPTO-MIT_RtoP_aug5 --meta_type 0 
---datasets ecreact_RtoP_aug10 --meta_type 0 --max_length 256 --batch_size 32 
---datasets ecreact_RtoP_aug10 --meta_type 2 --max_length 256 --batch_size 32 
---datasets ecreact_RtoP_aug10 --meta_type 3 --max_length 256 --batch_size 32
+--datasets USPTO-MIT_RtoP_aug5 --meta_type 0
 --datasets ecreact_RtoP_aug10 USPTO-MIT_RtoP_aug5 --meta_type 0 --max_length 256 --batch_size 32
 --datasets ecreact_RtoP_aug10 USPTO-MIT_RtoP_aug5 --meta_type 2 --max_length 256 --batch_size 32
 --datasets ecreact_RtoP_aug10 USPTO-MIT_RtoP_aug5 --meta_type 3 --max_length 256 --batch_size 32
+--datasets ecreact_RtoP_aug10 --meta_type 0 --max_length 256 --batch_size 32
+--datasets ecreact_RtoP_aug10 --meta_type 2 --max_length 256 --batch_size 32
+--datasets ecreact_RtoP_aug10 --meta_type 3 --max_length 256 --batch_size 32
+--datasets USPTO-MIT_PtoR_aug5 --meta_type 0
+--datasets ecreact_PtoR_aug10 USPTO-MIT_PtoR_aug5 --meta_type 0 --max_length 256 --batch_size 32
+--datasets ecreact_PtoR_aug10 USPTO-MIT_PtoR_aug5 --meta_type 2 --max_length 256 --batch_size 32
+--datasets ecreact_PtoR_aug10 USPTO-MIT_PtoR_aug5 --meta_type 3 --max_length 256 --batch_size 32
+--datasets ecreact_PtoR_aug10 --meta_type 0 --max_length 256 --batch_size 32
+--datasets ecreact_PtoR_aug10 --meta_type 2 --max_length 256 --batch_size 32
+--datasets ecreact_PtoR_aug10 --meta_type 3 --max_length 256 --batch_size 32
