@@ -80,12 +80,12 @@ class CustomTranslationModel(T5ForConditionalGeneration):
                 ones_for_mask = torch.ones((attention_mask.shape[0], ones_size), device=combined_embedding.device)
                 attention_mask = torch.cat([attention_mask, ones_for_mask], dim=-1)
                 encoder_outputs.last_hidden_state = combined_embedding
-            else:  # self.meta_type==ADD_META
+            else:  # self.meta_type == ADD_META
                 assert len(emb_to_add) == 1
                 encoder_outputs.last_hidden_state = encoder_embedding + emb_to_add[0]
         outputs = super().forward(
             encoder_outputs=encoder_outputs,
-            attention_mask=attention_mask.float(),
+            attention_mask=attention_mask,
             labels=labels,
             **kwargs
         )

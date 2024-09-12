@@ -28,7 +28,8 @@ class CustomDataset(Dataset):
         for ds in datasets:
             self.load_dataset(f"data/{ds}", split)
         if shuffle:
-            self.input_ids, self.labels, self.meta_values = shuffle_lists(self.input_ids, self.labels, self.meta_values)
+            self.input_ids, self.labels, self.meta_values, self.attention_masks = shuffle_lists(
+                self.input_ids, self.labels, self.meta_values, self.attention_masks)
 
     def load_ec_mapping(self, ec_path):
         ec_to_id = dict()
