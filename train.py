@@ -114,7 +114,11 @@ def compute_metrics(eval_pred):  # model, tokenizer, gen_dataloaders
 
 def args_to_name(args):
     datasets = "-".join(args.datasets)
-    return f"ds-{datasets}_s-{args.size}_m-{args.meta_type}_l-{args.max_length}_b-{args.batch_size}"
+    if args.model_cp != "":
+        transfer = "transfer_"
+    else:
+        transfer = ""
+    return f"{transfer}ds-{datasets}_s-{args.size}_m-{args.meta_type}_l-{args.max_length}_b-{args.batch_size}"
 
 
 # not_freeze = ("meta_embedding.weight", "lookup_proj.weight", "lookup_proj.bias")
@@ -150,6 +154,15 @@ def args_to_name(args):
 #             print("Unfreezing all layers")
 #             unfreeze_all_layers()
 #             return control
+def get_last_cp(base_dir):
+    import os
+    import re
+    cp_dirs = os.listdir(base_dir)
+    cp_dirs = [f for f in cp_dirs if re.match(r"checkpoint-\d+", f)]
+    cp_dirs = sorted(cp_dirs, key=lambda x: int(x.split("-")[1]))
+    if len(cp_dirs) == 0:
+        raise ValueError("No checkpoints found")
+    return f"{base_dir}/{cp_dirs[-1]}/pytorch_model.bin"
 
 
 if __name__ == "__main__":
@@ -194,7 +207,8 @@ if __name__ == "__main__":
     #           sum([np.prod(p.size()) for p in model.parameters() if p.requires_grad]))
 
     if args.model_cp:
-        loaded_state_dict = torch.load(args.model_cp, map_location=torch.device('cpu'))
+        cp_file = get_last_cp(args.model_cp)
+        loaded_state_dict = torch.load(cp_file, map_location=torch.device('cpu'))
         model_state_dict = model.state_dict()
         missing_keys, unexpected_keys = model.load_state_dict(loaded_state_dict, strict=False)
         if missing_keys:
