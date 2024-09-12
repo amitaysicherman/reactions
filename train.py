@@ -77,7 +77,7 @@ def is_valid_smiles(smiles):
     return molecule is not None
 
 
-def compute_metrics(eval_pred, model, tokenizer, gen_dataloader):
+def compute_metrics(eval_pred, model, tokenizer, gen_dataloaders):
     predictions_, labels_ = eval_pred
     predictions_ = np.argmax(predictions_[0], axis=-1)
     token_acc = []
@@ -96,15 +96,20 @@ def compute_metrics(eval_pred, model, tokenizer, gen_dataloader):
     token_acc = np.mean(token_acc)
     accuracy = np.mean(accuracy)
     is_valid = np.mean(is_valid)
+
+    gen_dic_res = {}
+    for dataset, _ in gen_dataloaders.items():
+        gen_dic_res['gen_acc_' + dataset] = 0
+        gen_dic_res['gen_aug_acc_' + dataset] = 0
+
     global one_in_two
     one_in_two += 1
-    if one_in_two % 2 == 1:
-        gen_acc, gen_aug_acc = eval_gen(model, tokenizer, gen_dataloader)
-    else:
-        gen_acc, gen_aug_acc = 0, 0
+    if one_in_two % 2 * len(gen_dataloaders) == 1:
+        for dataset, gen_dataloader in gen_dataloaders.items():
+            gen_dic_res['gen_acc_' + dataset], gen_dic_res['gen_aug_acc_' + dataset] = eval_gen(model, tokenizer,
+                                                                                                gen_dataloader)
 
-    return {"accuracy": accuracy, "valid_smiles": is_valid, "token_acc": token_acc, "gen_acc": gen_acc,
-            "gen_aug_acc": gen_aug_acc}
+    return {"accuracy": accuracy, "valid_smiles": is_valid, "token_acc": token_acc, **gen_dic_res}
 
 
 def args_to_name(args):
@@ -211,15 +216,22 @@ if __name__ == "__main__":
     train_dataset = CustomDataset(args.datasets, "train", tokenizer, max_length, sample_size=sample_size,
                                   shuffle=shuffle)
 
-    train_dataset_small = CustomDataset(args.datasets, "train", tokenizer, max_length, sample_size=eval_sample_size,
-                                        shuffle=shuffle)
-    valid_dataset_small = CustomDataset(args.datasets, "val", tokenizer, max_length, sample_size=eval_sample_size,
-                                        shuffle=shuffle)
+    eval_datasets = {}
+    for dataset in args.datasets:
+        eval_datasets[f'train_{dataset}'] = CustomDataset([dataset], "train", tokenizer, max_length,
+                                                          sample_size=eval_sample_size,
+                                                          shuffle=shuffle)
+        eval_datasets[f'val_{dataset}'] = CustomDataset([dataset], "val", tokenizer, max_length,
+                                                        sample_size=eval_sample_size,
+                                                        shuffle=shuffle)
 
     gen_split = "train" if debug_mode else "val"
     gen_size = 10 if debug_mode else args.gen_size
-    gen_dataset = CustomDataset(args.datasets, gen_split, tokenizer, max_length, sample_size=gen_size, shuffle=False)
-    gen_dataloader = DataLoader(gen_dataset, batch_size=batch_size // 2, shuffle=False)
+    gen_datasets = {}
+    for dataset in args.datasets:
+        ds = CustomDataset([dataset], gen_split, tokenizer, max_length, sample_size=gen_size,
+                           shuffle=False)
+        gen_datasets[dataset] = DataLoader(ds, batch_size=gen_size, num_workers=0)
     results_dir = "./results_trans/" if args.model_cp else "./results/"
 
     training_args = TrainingArguments(
@@ -242,7 +254,7 @@ if __name__ == "__main__":
         eval_accumulation_steps=8,
         use_mps_device=False,
         load_best_model_at_end=True,
-        metric_for_best_model="validation_token_acc",
+        metric_for_best_model=f"val_{args.datasets[0]}_token_acc",
         report_to='none' if debug_mode else 'tensorboard',
         run_name=run_name,
     )
@@ -251,9 +263,9 @@ if __name__ == "__main__":
         model=model,
         args=training_args,
         train_dataset=train_dataset,
-        eval_dataset={"validation": valid_dataset_small, "train": train_dataset_small},
+        eval_dataset=eval_datasets,
         tokenizer=tokenizer,
-        compute_metrics=lambda x: compute_metrics(x, model, tokenizer, gen_dataloader),
+        compute_metrics=lambda x: compute_metrics(x, model, tokenizer, gen_datasets),
     )
 
     # if args.model_cp and args.meta_type != 0:

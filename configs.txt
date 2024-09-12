@@ -1,18 +1,14 @@
---datasets USPTO-MIT_PtoR_aug5 --meta_type 0 --model_cp results/ds-USPTO-MIT_PtoR_aug5_s-l_m-0_l-128_b-64/checkpoint-120000/pytorch_model.bin
---datasets ecreact_PtoR_aug10 --meta_type 0 --max_length 256 --batch_size 32 --model_cp results/ds-USPTO-MIT_PtoR_aug5_s-l_m-0_l-128_b-64/checkpoint-120000/pytorch_model.bin
---datasets ecreact_PtoR_aug10 --meta_type 2 --max_length 256 --batch_size 32 --model_cp results/ds-USPTO-MIT_PtoR_aug5_s-l_m-0_l-128_b-64/checkpoint-120000/pytorch_model.bin
---datasets ecreact_PtoR_aug10 USPTO-MIT_PtoR_aug5 --meta_type 0 --max_length 256 --batch_size 32 --model_cp results/ds-USPTO-MIT_PtoR_aug5_s-l_m-0_l-128_b-64/checkpoint-120000/pytorch_model.bin
---datasets ecreact_PtoR_aug10 USPTO-MIT_PtoR_aug5 --meta_type 1 --max_length 256 --batch_size 32 --model_cp results/ds-USPTO-MIT_PtoR_aug5_s-l_m-0_l-128_b-64/checkpoint-120000/pytorch_model.bin
---datasets ecreact_PtoR_aug10 USPTO-MIT_PtoR_aug5 --meta_type 2 --max_length 256 --batch_size 32 --model_cp results/ds-USPTO-MIT_PtoR_aug5_s-l_m-0_l-128_b-64/checkpoint-120000/pytorch_model.bin
---datasets USPTO-MIT_RtoP_aug5 --meta_type 0 --model_cp results/ds-USPTO-MIT_RtoP_aug5_s-l_m-0_l-128_b-64/checkpoint-120000/pytorch_model.bin
---datasets ecreact_RtoP_aug10 --meta_type 0 --max_length 256 --batch_size 32 --model_cp results/ds-USPTO-MIT_RtoP_aug5_s-l_m-0_l-128_b-64/checkpoint-120000/pytorch_model.bin
---datasets ecreact_RtoP_aug10 --meta_type 2 --max_length 256 --batch_size 32 --model_cp results/ds-USPTO-MIT_RtoP_aug5_s-l_m-0_l-128_b-64/checkpoint-120000/pytorch_model.bin
---datasets ecreact_RtoP_aug10 USPTO-MIT_RtoP_aug5 --meta_type 0 --max_length 256 --batch_size 32 --model_cp results/ds-USPTO-MIT_RtoP_aug5_s-l_m-0_l-128_b-64/checkpoint-120000/pytorch_model.bin
---datasets ecreact_RtoP_aug10 USPTO-MIT_RtoP_aug5 --meta_type 1 --max_length 256 --batch_size 32 --model_cp results/ds-USPTO-MIT_RtoP_aug5_s-l_m-0_l-128_b-64/checkpoint-120000/pytorch_model.bin
---datasets ecreact_RtoP_aug10 USPTO-MIT_RtoP_aug5 --meta_type 2 --max_length 256 --batch_size 32 --model_cp results/ds-USPTO-MIT_RtoP_aug5_s-l_m-0_l-128_b-64/checkpoint-120000/pytorch_model.bin
---datasets ecreact_PtoR_aug10 --meta_type 3 --max_length 256 --batch_size 32 --model_cp results/ds-USPTO-MIT_PtoR_aug5_s-l_m-0_l-128_b-64/checkpoint-120000/pytorch_model.bin
---datasets ecreact_RtoP_aug10 --meta_type 3 --max_length 256 --batch_size 32 --model_cp results/ds-USPTO-MIT_RtoP_aug5_s-l_m-0_l-128_b-64/checkpoint-120000/pytorch_model.bin
-
-
---datasets ecreact_RtoP_aug10 --meta_type 2 --max_length 256 --batch_size 32 --model_cp results_trans/ds-ecreact_RtoP_aug10_s-l_m-0_l-256_b-32/checkpoint-135000/pytorch_model.bin
---datasets ecreact_RtoP_aug10 --meta_type 3 --max_length 256 --batch_size 32 --model_cp results_trans/ds-ecreact_RtoP_aug10_s-l_m-0_l-256_b-32/checkpoint-135000/pytorch_model.bin
+--datasets USPTO-MIT_PtoR_aug5 --meta_type 0
+--datasets ecreact_PtoR_aug10 --meta_type 0 --max_length 256 --batch_size 32
+--datasets ecreact_PtoR_aug10 --meta_type 2 --max_length 256 --batch_size 32
+--datasets ecreact_PtoR_aug10 --meta_type 3 --max_length 256 --batch_size 32
+--datasets ecreact_PtoR_aug10 USPTO-MIT_PtoR_aug5 --meta_type 0 --max_length 256 --batch_size 32
+--datasets ecreact_PtoR_aug10 USPTO-MIT_PtoR_aug5 --meta_type 2 --max_length 256 --batch_size 32
+--datasets ecreact_PtoR_aug10 USPTO-MIT_PtoR_aug5 --meta_type 3 --max_length 256 --batch_size 32
+--datasets USPTO-MIT_RtoP_aug5 --meta_type 0 
+--datasets ecreact_RtoP_aug10 --meta_type 0 --max_length 256 --batch_size 32 
+--datasets ecreact_RtoP_aug10 --meta_type 2 --max_length 256 --batch_size 32 
+--datasets ecreact_RtoP_aug10 --meta_type 3 --max_length 256 --batch_size 32
+--datasets ecreact_RtoP_aug10 USPTO-MIT_RtoP_aug5 --meta_type 0 --max_length 256 --batch_size 32
+--datasets ecreact_RtoP_aug10 USPTO-MIT_RtoP_aug5 --meta_type 2 --max_length 256 --batch_size 32
+--datasets ecreact_RtoP_aug10 USPTO-MIT_RtoP_aug5 --meta_type 3 --max_length 256 --batch_size 32
