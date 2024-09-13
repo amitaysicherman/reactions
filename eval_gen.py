@@ -78,7 +78,6 @@ def eval_gen(model, tokenizer, dataloader, output_file):
 
 
 def cp_name_to_max_length(cp_name):
-    """    return f"{transfer}ds-{datasets}_s-{args.size}_m-{args.meta_type}_l-{args.max_length}_b-{args.batch_size}""""
     pairs = cp_name.split("_")
     for pair in pairs:
         if pair.startswith("l-"):
