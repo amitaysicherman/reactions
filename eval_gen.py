@@ -58,8 +58,9 @@ def eval_gen(model, tokenizer, dataloader, output_file):
 
                 pred = tokenizer.decode(outputs[i], skip_special_tokens=True).replace(" ", "")
                 pred_can = canonicalize_smiles_clear_map(pred)
-                with open(output_file, "a") as f:
-                    f.write(f"{gt}\t{pred}\n")
+                if output_file != "":
+                    with open(output_file, "a") as f:
+                        f.write(f"{gt}\t{pred}\n")
                 total += 1
                 if can_gt == pred_can:
                     correct += 1
@@ -105,10 +106,7 @@ if __name__ == "__main__":
     model.to(device)
 
     cp_name = os.path.basename(args.model_cp)
-    if args.debug_mode:
-        run_name = f"debug_{args.dataset}${cp_name}"
-    else:
-        run_name = f"{args.dataset}${cp_name}"
+    run_name = f"{args.dataset}${cp_name}"
     max_length = 175
 
     tokenizer = PreTrainedTokenizerFast(tokenizer_file=args.tokenizer_file, model_max_length=max_length)
@@ -122,7 +120,10 @@ if __name__ == "__main__":
     gen_dataloader = DataLoader(gen_dataset, batch_size=args.batch_size, num_workers=0)
     if not os.path.exists("gen"):
         os.makedirs("gen")
-    output_file = f"gen/{run_name}.txt"
+    if args.debug_mode:
+        output_file = ""
+    else:
+        output_file = f"gen/{run_name}.txt"
     summary_file = f"gen/summary.csv"
     if not os.path.exists(summary_file):
         with open(summary_file, "w") as f:
