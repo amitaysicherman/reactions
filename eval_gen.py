@@ -90,6 +90,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--model_cp", default="", type=str)
     parser.add_argument("--dataset", default='ecreact_PtoR_aug10', type=str)
+    parser.add_argument("--batch_size", default=8, type=int)
     parser.add_argument("--tokenizer_file", default="data/tokenizer.json", type=str)
 
     args = parser.parse_args()
@@ -102,18 +103,22 @@ if __name__ == "__main__":
     model.load_state_dict(torch.load(f"{cp_dir}/pytorch_model.bin", map_location="cpu"))
     model.to(device)
 
-    run_name = os.path.basename(args.model_cp)
-    max_length = cp_name_to_max_length(run_name)
+    cp_name = os.path.basename(args.model_cp)
+    run_name = f"{args.dataset}${cp_name}"
+    max_length = cp_name_to_max_length(cp_name)
 
     tokenizer = PreTrainedTokenizerFast(tokenizer_file=args.tokenizer_file, model_max_length=max_length)
     special_tokens_dict = {'pad_token': '[PAD]', 'eos_token': '</s>', 'bos_token': '<s>', 'unk_token': '<unk>'}
     num_added_toks = tokenizer.add_special_tokens(special_tokens_dict)
     gen_dataset = CustomDataset([args.dataset], "val", tokenizer, max_length, sample_size=None, shuffle=False)
-    gen_dataloader = DataLoader(gen_dataset, batch_size=32, num_workers=0)
+    gen_dataloader = DataLoader(gen_dataset, batch_size=args.batch_size, num_workers=0)
     if not os.path.exists("gen"):
         os.makedirs("gen")
     output_file = f"gen/{run_name}.txt"
+    summary_file = f"gen/summary.csv"
+    if not os.path.exists(summary_file):
+        with open(summary_file, "w") as f:
+            f.write("dataset,cp,flat_acc,per_key_acc\n")
     flat_acc, per_key_acc = eval_gen(model, tokenizer, gen_dataloader, output_file)
-    with open(f"gen/{run_name}.txt", "a") as f:
-        f.write(f"Flat acc: {flat_acc:.2%}\n")
-        f.write(f"Per key acc: {per_key_acc:.2%}\n")
+    with open(summary_file, "a") as f:
+        f.write(f"{args.dataset},{cp_name},{flat_acc},{per_key_acc}\n")
