@@ -5,7 +5,7 @@ import numpy as np
 import argparse
 from rdkit import Chem
 from collections import defaultdict
-from model import CustomTranslationModel
+from model import CustomTranslationModel, CustomTranslationConfig
 from dataset import CustomDataset
 from torch.utils.data import DataLoader
 import torch
@@ -15,7 +15,8 @@ from tqdm import tqdm
 from rdkit import RDLogger
 
 RDLogger.DisableLog('rdApp.*')
-one_in_two = 0
+
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 
 def canonicalize_smiles_clear_map(smiles):
@@ -95,8 +96,11 @@ if __name__ == "__main__":
 
     cp_dir = sorted([f for f in os.listdir(args.model_cp) if re.match(r"checkpoint-\d+", f)],
                     key=lambda x: int(x.split("-")[1]))[0]
+    config = CustomTranslationConfig.from_json_file(cp_dir + "/config.json")
+    model = CustomTranslationModel(config)
+    model.load_state_dict(torch.load(f"{args.model_cp}/{cp_dir}/pytorch_model.bin", map_location="cpu"))
+    model.to(device)
 
-    model = CustomTranslationModel.from_pretrained(cp_dir,local_files_only=True)
     run_name = os.path.basename(args.model_cp)
     max_length = cp_name_to_max_length(cp_dir)
 
