@@ -96,6 +96,7 @@ if __name__ == "__main__":
 
     cp_dir = sorted([f for f in os.listdir(args.model_cp) if re.match(r"checkpoint-\d+", f)],
                     key=lambda x: int(x.split("-")[1]))[0]
+    cp_dir = f"{args.model_cp}/{cp_dir}"
     config = CustomTranslationConfig.from_json_file(cp_dir + "/config.json")
     model = CustomTranslationModel(config)
     model.load_state_dict(torch.load(f"{args.model_cp}/{cp_dir}/pytorch_model.bin", map_location="cpu"))
