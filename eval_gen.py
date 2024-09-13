@@ -1,0 +1,115 @@
+# sbatch --mem=128G --gres=gpu:A40:1 --time=3-0 --wrap="python train.py --size=l --retro=0 --usptonly=1"
+
+from transformers import PreTrainedTokenizerFast
+import numpy as np
+import argparse
+from rdkit import Chem
+from collections import defaultdict
+from model import CustomTranslationModel
+from dataset import CustomDataset
+from torch.utils.data import DataLoader
+import torch
+import os
+import re
+from tqdm import tqdm
+from rdkit import RDLogger
+
+RDLogger.DisableLog('rdApp.*')
+one_in_two = 0
+
+
+def canonicalize_smiles_clear_map(smiles):
+    smiles = smiles.replace(" ", "")
+    try:
+        mol = Chem.MolFromSmiles(smiles)
+        cam_smiles = Chem.MolToSmiles(mol)
+    except Exception as e:
+        cam_smiles = ""
+    return cam_smiles
+
+
+def eval_gen(model, tokenizer, dataloader, output_file):
+    if os.path.exists(output_file):
+        os.remove(output_file)
+    can_to_pred = defaultdict(list)
+    need_to_restore = False
+    if model.training:
+        model.eval()
+        need_to_restore = True
+    correct = 0
+    total = 0
+    with torch.no_grad():
+        pbar = tqdm(dataloader)
+        for batch in pbar:
+            input_ids = batch['input_ids'].to(model.device)
+            labels_ = batch['labels'].cpu().numpy()
+            labels = [l[l != -100] for l in labels_]
+
+            attention_mask = batch['attention_mask'].to(model.device)
+
+            meta = batch['meta'].to(model.device)
+            outputs = model.generate(input_ids=input_ids, attention_mask=attention_mask, meta=meta,
+                                     max_length=tokenizer.model_max_length, do_sample=False, num_beams=10)
+
+            for i in range(len(labels)):
+                gt = tokenizer.decode(labels[i], skip_special_tokens=True).replace(" ", "")
+                can_gt = canonicalize_smiles_clear_map(gt)
+
+                pred = tokenizer.decode(outputs[i], skip_special_tokens=True).replace(" ", "")
+                pred_can = canonicalize_smiles_clear_map(pred)
+                with open(output_file, "a") as f:
+                    f.write(f"{gt}\t{pred}\n")
+                total += 1
+                if can_gt == pred_can:
+                    correct += 1
+                pbar.set_description(f"Acc: {correct:,} / {total:,} ({correct / total:.2%})")
+                if pred_can != "":
+                    can_to_pred[can_gt].append(pred_can)
+
+    flat_correct = []
+    per_key_correct = []
+    for k, v in can_to_pred.items():
+        max_freq = max(v, key=v.count)
+        per_key_correct.append(max_freq == k)
+        flat_correct.extend([v_ == k for v_ in v])
+    if need_to_restore:
+        model.train()
+    return np.mean(flat_correct), np.mean(per_key_correct)
+
+
+def cp_name_to_max_length(cp_name):
+    """    return f"{transfer}ds-{datasets}_s-{args.size}_m-{args.meta_type}_l-{args.max_length}_b-{args.batch_size}""""
+    pairs = cp_name.split("_")
+    for pair in pairs:
+        if pair.startswith("l-"):
+            return int(pair.split("-")[1])
+    raise ValueError(f"Could not find max_length in {cp_name}")
+
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--model_cp", default="", type=str)
+    parser.add_argument("--dataset", default='ecreact_PtoR_aug10', type=str)
+    parser.add_argument("--tokenizer_file", default="data/tokenizer.json", type=str)
+
+    args = parser.parse_args()
+
+    cp_dir = sorted([f for f in os.listdir(args.model_cp) if re.match(r"checkpoint-\d+", f)],
+                    key=lambda x: int(x.split("-")[1]))[0]
+
+    model = CustomTranslationModel.from_pretrained(cp_dir)
+    run_name = os.path.basename(args.model_cp)
+    max_length = cp_name_to_max_length(cp_dir)
+
+    tokenizer = PreTrainedTokenizerFast(tokenizer_file=args.tokenizer_file, model_max_length=max_length)
+    special_tokens_dict = {'pad_token': '[PAD]', 'eos_token': '</s>', 'bos_token': '<s>', 'unk_token': '<unk>'}
+    num_added_toks = tokenizer.add_special_tokens(special_tokens_dict)
+    gen_dataset = CustomDataset([args.dataset], "val", tokenizer, max_length, sample_size=None, shuffle=False)
+    gen_dataloader = DataLoader(gen_dataset, batch_size=32, num_workers=0)
+    if not os.path.exists("gen"):
+        os.makedirs("gen")
+    output_file = f"gen/{run_name}.txt"
+    flat_acc, per_key_acc = eval_gen(model, tokenizer, gen_dataloader, output_file)
+    with open(f"gen/{run_name}.txt", "a") as f:
+        f.write(f"Flat acc: {flat_acc:.2%}\n")
+        f.write(f"Per key acc: {per_key_acc:.2%}\n")
