@@ -91,6 +91,7 @@ if __name__ == "__main__":
     parser.add_argument("--model_cp", default="", type=str)
     parser.add_argument("--dataset", default='ecreact_PtoR_aug10', type=str)
     parser.add_argument("--batch_size", default=8, type=int)
+    parser.add_argument("--debug_mode", default=0, type=int)
     parser.add_argument("--tokenizer_file", default="data/tokenizer.json", type=str)
 
     args = parser.parse_args()
@@ -104,13 +105,19 @@ if __name__ == "__main__":
     model.to(device)
 
     cp_name = os.path.basename(args.model_cp)
+    if args.debug_mode:
+        cp_name = "debug_" + cp_name
     run_name = f"{args.dataset}${cp_name}"
     max_length = 175
 
     tokenizer = PreTrainedTokenizerFast(tokenizer_file=args.tokenizer_file, model_max_length=max_length)
     special_tokens_dict = {'pad_token': '[PAD]', 'eos_token': '</s>', 'bos_token': '<s>', 'unk_token': '<unk>'}
     num_added_toks = tokenizer.add_special_tokens(special_tokens_dict)
-    gen_dataset = CustomDataset([args.dataset], "val", tokenizer, max_length, sample_size=None, shuffle=False)
+    if args.debug_mode:
+        sample_size = 100
+    else:
+        sample_size = None
+    gen_dataset = CustomDataset([args.dataset], "val", tokenizer, max_length, sample_size=sample_size, shuffle=False)
     gen_dataloader = DataLoader(gen_dataset, batch_size=args.batch_size, num_workers=0)
     if not os.path.exists("gen"):
         os.makedirs("gen")
