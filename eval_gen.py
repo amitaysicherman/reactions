@@ -103,7 +103,7 @@ if __name__ == "__main__":
     model.to(device)
 
     run_name = os.path.basename(args.model_cp)
-    max_length = cp_name_to_max_length(cp_dir)
+    max_length = cp_name_to_max_length(run_name)
 
     tokenizer = PreTrainedTokenizerFast(tokenizer_file=args.tokenizer_file, model_max_length=max_length)
     special_tokens_dict = {'pad_token': '[PAD]', 'eos_token': '</s>', 'bos_token': '<s>', 'unk_token': '<unk>'}
