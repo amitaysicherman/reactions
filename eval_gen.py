@@ -61,6 +61,8 @@ def eval_gen(model, tokenizer, dataloader, output_file):
                 if output_file != "":
                     with open(output_file, "a") as f:
                         f.write(f"{gt}\t{pred}\n")
+                else:
+                    print(f"GT: {gt}, Pred: {pred}")
                 total += 1
                 if can_gt == pred_can:
                     correct += 1
