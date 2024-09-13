@@ -106,8 +106,9 @@ if __name__ == "__main__":
 
     cp_name = os.path.basename(args.model_cp)
     if args.debug_mode:
-        cp_name = "debug_" + cp_name
-    run_name = f"{args.dataset}${cp_name}"
+        run_name = f"debug_{args.dataset}${cp_name}"
+    else:
+        run_name = f"{args.dataset}${cp_name}"
     max_length = 175
 
     tokenizer = PreTrainedTokenizerFast(tokenizer_file=args.tokenizer_file, model_max_length=max_length)
@@ -127,5 +128,8 @@ if __name__ == "__main__":
         with open(summary_file, "w") as f:
             f.write("dataset,cp,flat_acc,per_key_acc\n")
     flat_acc, per_key_acc = eval_gen(model, tokenizer, gen_dataloader, output_file)
-    with open(summary_file, "a") as f:
-        f.write(f"{args.dataset},{cp_name},{flat_acc},{per_key_acc}\n")
+    if args.debug_mode:
+        print(f"Flat Acc: {flat_acc:.2%}, Per Key Acc: {per_key_acc:.2%}")
+    else:
+        with open(summary_file, "a") as f:
+            f.write(f"{args.dataset},{cp_name},{flat_acc},{per_key_acc}\n")
