@@ -96,7 +96,7 @@ if __name__ == "__main__":
     cp_dir = sorted([f for f in os.listdir(args.model_cp) if re.match(r"checkpoint-\d+", f)],
                     key=lambda x: int(x.split("-")[1]))[0]
 
-    model = CustomTranslationModel.from_pretrained(cp_dir)
+    model = CustomTranslationModel.from_pretrained(cp_dir,local_files_only=True)
     run_name = os.path.basename(args.model_cp)
     max_length = cp_name_to_max_length(cp_dir)
 
