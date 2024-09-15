@@ -119,7 +119,8 @@ def args_to_name(args):
         transfer = "transfer_"
     else:
         transfer = ""
-    return f"{transfer}ds-{datasets}_s-{args.size}_m-{args.meta_type}_l-{args.max_length}_b-{args.batch_size}"
+
+    return f"{transfer}ds-{datasets}_s-{args.size}_m-{args.meta_type}_l-{args.max_length}_b-{args.batch_size}_ec_tokens-{args.ec_tokens}"
 
 
 # not_freeze = ("meta_embedding.weight", "lookup_proj.weight", "lookup_proj.bias")
