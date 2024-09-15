@@ -95,8 +95,6 @@ if __name__ == "__main__":
     parser.add_argument("--dataset", default='ecreact_PtoR_aug10', type=str)
     parser.add_argument("--batch_size", default=8, type=int)
     parser.add_argument("--debug_mode", default=0, type=int)
-    parser.add_argument("--tokenizer_file", default="data/tokenizer.json", type=str)
-
     args = parser.parse_args()
 
     cp_dir = sorted([f for f in os.listdir(args.model_cp) if re.match(r"checkpoint-\d+", f)],
@@ -109,8 +107,8 @@ if __name__ == "__main__":
 
     cp_name = os.path.basename(args.model_cp)
     run_name = f"{args.dataset}${cp_name}"
-    max_length = 175
-
+    max_length = 200
+    tokenizer_file = f"{cp_dir}/tokenizer.json"
     tokenizer = PreTrainedTokenizerFast(tokenizer_file=args.tokenizer_file, model_max_length=max_length)
     special_tokens_dict = {'pad_token': '[PAD]', 'eos_token': '</s>', 'bos_token': '<s>', 'unk_token': '<unk>'}
     num_added_toks = tokenizer.add_special_tokens(special_tokens_dict)
