@@ -428,6 +428,8 @@ if __name__ == '__main__':
             product_smarts_list = list(
                 map(lambda x: x.split(' ')[0], product_smarts_list))
             save_dir = os.path.join(savedir, data_set)
+            if not os.path.exists(save_dir):
+                os.makedirs(save_dir)
             if args.dataset == 'ecreact' or args.dataset == 'bkms':
                 if args.dataset == 'bkms':
                     with open(os.path.join(datadir, f"ec-{data_set}.txt"), "r") as f:
