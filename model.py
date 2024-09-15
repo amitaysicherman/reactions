@@ -25,7 +25,7 @@ def get_layers(dims, dropout=0.0):
 
 
 class CustomTranslationConfig(T5Config):
-    def __init__(self, meta_type=NO_META, lookup_file="data/prot_emb.npy", lookup_len=4, **kwargs):
+    def __init__(self, meta_type=NO_META, lookup_file="data/ecreact/ec_esm2.npy", lookup_len=4, **kwargs):
         super(CustomTranslationConfig, self).__init__(**kwargs)
         self.meta_type = meta_type
         self.lookup_file = lookup_file
