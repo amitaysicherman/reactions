@@ -26,6 +26,7 @@ def add_ec_tokens(tokenizer, ec_path="data/ecreact/ec.fasta"):
 
 def encode_bos_eos_pad(tokenizer, text, max_length):
     tokens = tokenizer.encode(text, add_special_tokens=False, truncation=False)
+    print(tokens)
     if len(tokens) > max_length - 2:
         return None, None
     tokens = [tokenizer.bos_token_id] + tokens + [tokenizer.eos_token_id]

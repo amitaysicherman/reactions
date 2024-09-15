@@ -88,7 +88,9 @@ class CustomDataset(Dataset):
 
         skip_count = 0
         for src, tgt, ec in tqdm(zip(src_lines, tgt_lines, ec_lines), total=len(src_lines)):
+            print(src)
             input_id, attention_mask = encode_bos_eos_pad(self.tokenizer, src, self.max_length)
+            print(input_id)
             label, label_mask = encode_bos_eos_pad(self.tokenizer, tgt, self.max_length)
             if input_id is None or label is None:
                 skip_count += 1
