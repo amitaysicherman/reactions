@@ -107,7 +107,6 @@ if __name__ == '__main__':
 
     parser = argparse.ArgumentParser()
     parser.add_argument("--ec_path", type=str, default="data/bkms/ec.fasta")
-    parser.add_argument("--output", type=str, default="data/bkms/protein_vecs.npy")
     parser.add_argument("--model_name", type=str, default=ESM_2)
     args = parser.parse_args()
     prot2vec = Prot2vec(name=args.model_name)
@@ -122,4 +121,5 @@ if __name__ == '__main__':
         vec = prot2vec.to_vec(fasta)  # (1,dim)
         all_vecs.append(vec)
     all_vecs = np.concatenate(all_vecs, axis=0)
-    np.save(args.output, all_vecs)
+    output_fle=args.ec_path.replace(".fasta", f"_{args.model_name}.npy")
+    np.save(output_fle, all_vecs)
