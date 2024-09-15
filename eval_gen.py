@@ -95,6 +95,8 @@ if __name__ == "__main__":
     parser.add_argument("--dataset", default='ecreact_PtoR_aug10', type=str)
     parser.add_argument("--batch_size", default=8, type=int)
     parser.add_argument("--debug_mode", default=0, type=int)
+    parser.add_argument("--ec_tokens", default=0, type=int)
+
     args = parser.parse_args()
 
     cp_dir = sorted([f for f in os.listdir(args.model_cp) if re.match(r"checkpoint-\d+", f)],
@@ -116,7 +118,8 @@ if __name__ == "__main__":
         sample_size = 100
     else:
         sample_size = None
-    gen_dataset = CustomDataset([args.dataset], "val", tokenizer, max_length, sample_size=sample_size, shuffle=False)
+    gen_dataset = CustomDataset([args.dataset], "val", tokenizer, max_length, sample_size=sample_size, shuffle=False,
+                                use_ec_tokens=args.ec_tokens)
     gen_dataloader = DataLoader(gen_dataset, batch_size=args.batch_size, num_workers=0)
     if not os.path.exists("gen"):
         os.makedirs("gen")
