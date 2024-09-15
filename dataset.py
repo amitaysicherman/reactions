@@ -21,9 +21,24 @@ def dataset_to_ec_path(datasets):
     return "data/ecreact/ec.fasta"
 
 
+def ec_to_tokens(ec):
+    return ["<|>"] + [f"<ec{i}-{v}>" for i, v in enumerate(ec.split("."), 1)]
+
+
+def get_ec_tokens(ec_path):
+    ec_tokens = []
+    with open(ec_path) as f:
+        for line in f:
+            id_, ec, fasta = line.strip().split(",")
+            ec_tokens.extend(ec_to_tokens(ec))
+    ec_tokens = list(set(ec_tokens))
+    print(f"Number of unique EC tokens: {len(ec_tokens)}")
+    return ec_tokens
+
+
 class CustomDataset(Dataset):
     def __init__(self, datasets, split, tokenizer, max_length=128, seed=42, sample_size=None, shuffle=True,
-                 skip_no_emb=True):
+                 skip_no_emb=True, use_ec_tokens=False):
         self.tokenizer = tokenizer
         self.load_ec_mapping(dataset_to_ec_path(datasets))
         np.random.seed(seed)
@@ -34,6 +49,9 @@ class CustomDataset(Dataset):
         self.labels = []
         self.meta_values = []
         self.max_length = max_length
+        self.use_ec_tokens = use_ec_tokens
+        if self.use_ec_tokens:
+            self.tokenizer.add_tokens(get_ec_tokens(dataset_to_ec_path(datasets)))
         for ds in datasets:
             self.load_dataset(f"data/{ds}", split, skip_no_emb)
         if shuffle:
@@ -68,6 +86,9 @@ class CustomDataset(Dataset):
                 print(f"Dataset :{input_base}, split: {split}, skipped: {l_before - l_after}/{l_before}")
         else:
             ec_lines = [0] * len(src_lines)
+        if self.use_ec_tokens:
+            src_lines = [src + " " + " ".join(ec_to_tokens(self.ec_id_to_ec[ec])) for src, ec in
+                         zip(src_lines, ec_lines)]
 
         if self.shuffle:
             src_lines, tgt_lines, ec_lines = shuffle_lists(src_lines, tgt_lines, ec_lines)
