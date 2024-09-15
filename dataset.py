@@ -35,6 +35,8 @@ class CustomDataset(Dataset):
         self.meta_values = []
         self.max_length = max_length
         self.use_ec_tokens = use_ec_tokens
+        if self.use_ec_tokens:
+            skip_no_emb = False
         for ds in datasets:
             self.load_dataset(f"data/{ds}", split, skip_no_emb)
         if shuffle:
