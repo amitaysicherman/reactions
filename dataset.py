@@ -15,9 +15,9 @@ def shuffle_lists(*ls):
 def dataset_to_ec_path(datasets):
     for dataset in datasets:
         if "ecreact" in dataset:
-            return "data/ecreact/ec_to_id.txt"
+            return "data/ecreact/ec.fasta"
         elif "bkms" in dataset:
-            return "data/bkms/ec_to_id.txt"
+            return "data/bkms/ec.fasta"
     return "data/ecreact/ec_to_id.txt"
 
 
