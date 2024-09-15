@@ -22,8 +22,15 @@
 
 
 
---datasets ecreact_RtoP_aug10 --exp_name forward_trans --meta_type 0 --max_length 180 --batch_size 60 --model_cp results/ds-USPTO-MIT_RtoP_aug5_s-l_m-0_l-128_b-64/  --ec_tokens 0 --skip_no_emb 0
---datasets ecreact_RtoP_aug10 --exp_name forward_trans --meta_type 0 --max_length 180 --batch_size 60 --model_cp results/ds-USPTO-MIT_RtoP_aug5_s-l_m-0_l-128_b-64/  --ec_tokens 0 --skip_no_emb 1
---datasets ecreact_RtoP_aug10 --exp_name forward_trans --meta_type 0 --max_length 180 --batch_size 60 --model_cp results/ds-USPTO-MIT_RtoP_aug5_s-l_m-0_l-128_b-64/  --ec_tokens 1 --skip_no_emb 0
---datasets ecreact_RtoP_aug10 --exp_name forward_trans --meta_type 0 --max_length 180 --batch_size 60 --model_cp results/ds-USPTO-MIT_RtoP_aug5_s-l_m-0_l-128_b-64/  --ec_tokens 1 --skip_no_emb 1
-
+--datasets ecreact_RtoP_aug10 --exp_name trans_all --meta_type 0 --max_length 180 --batch_size 60 --model_cp results/ds-USPTO-MIT_RtoP_aug5_s-l_m-0_l-128_b-64/  --ec_tokens 0 --skip_no_emb 0
+--datasets ecreact_RtoP_aug10 --exp_name trans_all --meta_type 0 --max_length 180 --batch_size 60 --model_cp results/ds-USPTO-MIT_RtoP_aug5_s-l_m-0_l-128_b-64/  --ec_tokens 0 --skip_no_emb 1
+--datasets ecreact_RtoP_aug10 --exp_name trans_all --meta_type 1 --max_length 180 --batch_size 60 --model_cp results/ds-USPTO-MIT_RtoP_aug5_s-l_m-0_l-128_b-64/  --ec_tokens 0 --skip_no_emb 1
+--datasets ecreact_RtoP_aug10 --exp_name trans_all --meta_type 2 --max_length 180 --batch_size 60 --model_cp results/ds-USPTO-MIT_RtoP_aug5_s-l_m-0_l-128_b-64/  --ec_tokens 0 --skip_no_emb 1
+--datasets ecreact_RtoP_aug10 --exp_name trans_all --meta_type 0 --max_length 180 --batch_size 60 --model_cp results/ds-USPTO-MIT_RtoP_aug5_s-l_m-0_l-128_b-64/  --ec_tokens 1 --skip_no_emb 0
+--datasets ecreact_RtoP_aug10 --exp_name trans_all --meta_type 0 --max_length 180 --batch_size 60 --model_cp results/ds-USPTO-MIT_RtoP_aug5_s-l_m-0_l-128_b-64/  --ec_tokens 1 --skip_no_emb 1
+--datasets ecreact_PtoR_aug10 --exp_name trans_all --meta_type 0 --max_length 180 --batch_size 60 --model_cp results/ds-USPTO-MIT_PtoR_aug5_s-l_m-0_l-128_b-64/  --ec_tokens 0 --skip_no_emb 0
+--datasets ecreact_PtoR_aug10 --exp_name trans_all --meta_type 0 --max_length 180 --batch_size 60 --model_cp results/ds-USPTO-MIT_PtoR_aug5_s-l_m-0_l-128_b-64/  --ec_tokens 0 --skip_no_emb 1
+--datasets ecreact_PtoR_aug10 --exp_name trans_all --meta_type 1 --max_length 180 --batch_size 60 --model_cp results/ds-USPTO-MIT_PtoR_aug5_s-l_m-0_l-128_b-64/  --ec_tokens 0 --skip_no_emb 1
+--datasets ecreact_PtoR_aug10 --exp_name trans_all --meta_type 2 --max_length 180 --batch_size 60 --model_cp results/ds-USPTO-MIT_PtoR_aug5_s-l_m-0_l-128_b-64/  --ec_tokens 0 --skip_no_emb 1
+--datasets ecreact_PtoR_aug10 --exp_name trans_all --meta_type 0 --max_length 180 --batch_size 60 --model_cp results/ds-USPTO-MIT_PtoR_aug5_s-l_m-0_l-128_b-64/  --ec_tokens 1 --skip_no_emb 0
+--datasets ecreact_PtoR_aug10 --exp_name trans_all --meta_type 0 --max_length 180 --batch_size 60 --model_cp results/ds-USPTO-MIT_PtoR_aug5_s-l_m-0_l-128_b-64/  --ec_tokens 1 --skip_no_emb 1

@@ -243,8 +243,5 @@ if __name__ == "__main__":
     #     freeze_layers(model)
     #     trainer.add_callback(UnfreezeCallback(model, unfreeze_epoch=1))
 
-    # run evaluation before training
-    eval_results = trainer.evaluate()
-    print(eval_results)
 
     trainer.train()
