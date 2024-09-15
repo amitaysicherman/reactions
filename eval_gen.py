@@ -98,7 +98,6 @@ if __name__ == "__main__":
     parser.add_argument("--ec_tokens", default=0, type=int)
     parser.add_argument("--skip_no_emb", default=1, type=int)
 
-
     args = parser.parse_args()
 
     cp_dir = sorted([f for f in os.listdir(args.model_cp) if re.match(r"checkpoint-\d+", f)],
@@ -114,6 +113,8 @@ if __name__ == "__main__":
     max_length = 200
     tokenizer_file = f"{cp_dir}/tokenizer.json"
     tokenizer = PreTrainedTokenizerFast(tokenizer_file=tokenizer_file, model_max_length=max_length)
+    special_tokens_dict = {'pad_token': '[PAD]', 'eos_token': '</s>', 'bos_token': '<s>', 'unk_token': '<unk>'}
+    num_added_toks = tokenizer.add_special_tokens(special_tokens_dict)
     if args.debug_mode:
         sample_size = 100
     else:
