@@ -431,12 +431,8 @@ if __name__ == '__main__':
             if not os.path.exists(save_dir):
                 os.makedirs(save_dir)
             if args.dataset == 'ecreact' or args.dataset == 'bkms':
-                if args.dataset == 'bkms':
-                    with open(os.path.join(datadir, f"ec-{data_set}.txt"), "r") as f:
-                        ec_list = f.readlines()
-                        ec_list = list(map(lambda x: x.strip(), ec_list))
-                else:
-                    ec_list = list(map(lambda x: x.split(' ')[1], reaction_list))
+                with open(os.path.join(datadir, f"ec-{data_set}.txt"), "r") as f:
+                    ec_list = f.readlines()
                     ec_list = list(map(lambda x: x.strip(), ec_list))
                 with open(os.path.join(save_dir, f"ec-{data_set}.txt"), "w") as f:
                     for ec in ec_list:
