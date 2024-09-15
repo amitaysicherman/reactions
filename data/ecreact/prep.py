@@ -91,4 +91,4 @@ for ec in tqdm(ec_to_id):
     res.append((ec_to_id[ec], ec, fasta))
 with open("ec.fasta", "w") as f:
     for id_, ec, fasta in res:
-        f.write(f">{id_},{ec},{fasta}\n")
+        f.write(f"{id_},{ec},{fasta}\n")

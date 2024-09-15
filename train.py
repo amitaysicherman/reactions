@@ -186,6 +186,9 @@ if __name__ == "__main__":
     parser.add_argument("--eval_size", default=10000, type=int)
     parser.add_argument("--model_cp", default="", type=str)
     parser.add_argument("--ec_tokens", default=0, type=int)
+    parser.add_argument("--skip_no_emb", default=1, type=int)
+    parser.add_argument("--exp_name", default="results", type=str)
+
     args = parser.parse_args()
 
     run_name = args_to_name(args)
@@ -230,42 +233,28 @@ if __name__ == "__main__":
                     loaded_state_dict['decoder.embed_tokens.weight']
                 model_state_dict['lm_head.weight'][:loaded_state_dict['lm_head.weight'].size(0)] = loaded_state_dict[
                     'lm_head.weight']
-
-        # Now load the updated model state_dict (excluding layers with mismatched shapes)
         model.load_state_dict(model_state_dict)
 
-        # missing_keys, unexpected_keys = model.load_state_dict(loaded_state_dict, strict=False)
-        # if missing_keys:
-        #     print("The following keys are missing in the loaded state dict and were not loaded:")
-        #     for key in missing_keys:
-        #         print(f" - {key}")
-        # else:
-        #     print("All keys were found in the loaded state dict.")
-        #
-        # if unexpected_keys:
-        #     print("The following keys in the loaded state dict were not expected by the model:")
-        #     for key in unexpected_keys:
-        #         print(f" - {key}")
-        # else:
-        #     print("No unexpected keys were found in the loaded state dict.")
     sample_size = 10 if debug_mode else None
     eval_sample_size = 10 if debug_mode else args.eval_size
 
     shuffle = not debug_mode
     train_dataset = CustomDataset(args.datasets, "train", tokenizer, max_length, sample_size=sample_size,
-                                  shuffle=shuffle, use_ec_tokens=args.ec_tokens)
+                                  shuffle=shuffle, use_ec_tokens=args.ec_tokens, skip_no_emb=bool(args.skip_no_emb))
 
     eval_datasets = {}
     for dataset in args.datasets:
         eval_datasets[f'train_{dataset}'] = CustomDataset([dataset], "train", tokenizer, max_length,
                                                           sample_size=eval_sample_size,
-                                                          shuffle=shuffle, use_ec_tokens=args.ec_tokens)
+                                                          shuffle=shuffle, use_ec_tokens=args.ec_tokens,
+                                                          skip_no_emb=bool(args.skip_no_emb))
         eval_datasets[f'val_{dataset}'] = CustomDataset([dataset], "val", tokenizer, max_length,
                                                         sample_size=eval_sample_size,
-                                                        shuffle=shuffle, use_ec_tokens=args.ec_tokens)
+                                                        shuffle=shuffle, use_ec_tokens=args.ec_tokens,
+                                                        skip_no_emb=bool(args.skip_no_emb))
 
-    results_dir = "./results_trans/" if args.model_cp else "./results/"
-
+    # results_dir = "./results_trans/" if args.model_cp else "./results/"
+    results_dir = args.exp_name + "/"
     training_args = TrainingArguments(
         output_dir=results_dir + run_name,
         evaluation_strategy="steps",
