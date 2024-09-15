@@ -49,11 +49,14 @@ class CustomDataset(Dataset):
         if os.path.exists(f"{input_base}/{split}/ec-{split}.txt"):
             with open(f"{input_base}/{split}/ec-{split}.txt") as f:
                 ec_lines = f.read().splitlines()
-            ec_lines = [self.ec_to_id.get(ec, None) for ec in ec_lines]
+            ec_lines = [ec if ec in self.ec_to_id else None for ec in ec_lines]
             if skip_no_emb:
+                l_before = len(src_lines)
                 src_lines = [src for src, ec in zip(src_lines, ec_lines) if ec is not None]
                 tgt_lines = [tgt for tgt, ec in zip(tgt_lines, ec_lines) if ec is not None]
                 ec_lines = [ec for ec in ec_lines if ec is not None]
+                l_after = len(src_lines)
+                print(f"Dataset :{input_base}, split: {split}, skipped: {l_before - l_after}/{l_before}")
         else:
             ec_lines = [0] * len(src_lines)
 
