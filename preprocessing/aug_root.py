@@ -428,7 +428,7 @@ if __name__ == '__main__':
             product_smarts_list = list(
                 map(lambda x: x.split(' ')[0], product_smarts_list))
             save_dir = os.path.join(savedir, data_set)
-            if args.dataset == 'ecreact':
+            if args.dataset == 'ecreact' or args.dataset == 'bkms':
                 ec_list = list(map(lambda x: x.split(' ')[1], reaction_list))
                 ec_list = list(map(lambda x: x.strip(), ec_list))
                 with open(os.path.join(save_dir, f"ec-{data_set}.txt"), "w") as f:
