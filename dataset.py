@@ -18,7 +18,7 @@ def dataset_to_ec_path(datasets):
             return "data/ecreact/ec.fasta"
         elif "bkms" in dataset:
             return "data/bkms/ec.fasta"
-    return "data/ecreact/ec_to_id.txt"
+    return "data/ecreact/ec.fasta"
 
 
 class CustomDataset(Dataset):
