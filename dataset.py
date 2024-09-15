@@ -27,8 +27,8 @@ class CustomDataset(Dataset):
         self.tokenizer = tokenizer
         self.use_ec_tokens = use_ec_tokens
 
-        if self.use_ec_tokens:
-            skip_no_emb = False
+        # if self.use_ec_tokens:
+        #     skip_no_emb = False
 
         self.load_ec_mapping(dataset_to_ec_path(datasets), skip_no_emb)
         np.random.seed(seed)
@@ -45,7 +45,7 @@ class CustomDataset(Dataset):
             self.input_ids, self.labels, self.meta_values, self.attention_masks = shuffle_lists(
                 self.input_ids, self.labels, self.meta_values, self.attention_masks)
 
-    def load_ec_mapping(self, ec_path,skip_no_emb):
+    def load_ec_mapping(self, ec_path, skip_no_emb):
         ec_id_to_ec = dict()
         with open(ec_path) as f:
             for line in f:
