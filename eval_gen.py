@@ -96,6 +96,8 @@ if __name__ == "__main__":
     parser.add_argument("--batch_size", default=8, type=int)
     parser.add_argument("--debug_mode", default=0, type=int)
     parser.add_argument("--ec_tokens", default=0, type=int)
+    parser.add_argument("--skip_no_emb", default=1, type=int)
+
 
     args = parser.parse_args()
 
@@ -117,7 +119,7 @@ if __name__ == "__main__":
     else:
         sample_size = None
     gen_dataset = CustomDataset([args.dataset], "val", tokenizer, max_length, sample_size=sample_size, shuffle=False,
-                                use_ec_tokens=args.ec_tokens)
+                                use_ec_tokens=args.ec_tokens, skip_no_emb=bool(args.skip_no_emb))
     gen_dataloader = DataLoader(gen_dataset, batch_size=args.batch_size, num_workers=0)
     if not os.path.exists("gen"):
         os.makedirs("gen")

@@ -254,7 +254,7 @@ if __name__ == "__main__":
                                                         skip_no_emb=bool(args.skip_no_emb))
 
     # results_dir = "./results_trans/" if args.model_cp else "./results/"
-    results_dir = args.exp_name + "/"
+    results_dir = "results/" + args.exp_name + "/"
     training_args = TrainingArguments(
         output_dir=results_dir + run_name,
         evaluation_strategy="steps",
