@@ -215,20 +215,38 @@ if __name__ == "__main__":
         cp_file = get_last_cp(args.model_cp)
         loaded_state_dict = torch.load(cp_file, map_location=torch.device('cpu'))
         model_state_dict = model.state_dict()
-        missing_keys, unexpected_keys = model.load_state_dict(loaded_state_dict, strict=False)
-        if missing_keys:
-            print("The following keys are missing in the loaded state dict and were not loaded:")
-            for key in missing_keys:
-                print(f" - {key}")
-        else:
-            print("All keys were found in the loaded state dict.")
+        if args.ec_tokens:
+            with torch.no_grad():
+                # Handle token embedding layers with size mismatch
+                # Copy old weights for shared, encoder, decoder, and lm_head embeddings
+                model_state_dict['shared.weight'][:loaded_state_dict['shared.weight'].size(0)] = loaded_state_dict[
+                    'shared.weight']
+                model_state_dict['encoder.embed_tokens.weight'][
+                :loaded_state_dict['encoder.embed_tokens.weight'].size(0)] = \
+                    loaded_state_dict['encoder.embed_tokens.weight']
+                model_state_dict['decoder.embed_tokens.weight'][
+                :loaded_state_dict['decoder.embed_tokens.weight'].size(0)] = \
+                    loaded_state_dict['decoder.embed_tokens.weight']
+                model_state_dict['lm_head.weight'][:loaded_state_dict['lm_head.weight'].size(0)] = loaded_state_dict[
+                    'lm_head.weight']
 
-        if unexpected_keys:
-            print("The following keys in the loaded state dict were not expected by the model:")
-            for key in unexpected_keys:
-                print(f" - {key}")
-        else:
-            print("No unexpected keys were found in the loaded state dict.")
+        # Now load the updated model state_dict (excluding layers with mismatched shapes)
+        model.load_state_dict(model_state_dict)
+
+        # missing_keys, unexpected_keys = model.load_state_dict(loaded_state_dict, strict=False)
+        # if missing_keys:
+        #     print("The following keys are missing in the loaded state dict and were not loaded:")
+        #     for key in missing_keys:
+        #         print(f" - {key}")
+        # else:
+        #     print("All keys were found in the loaded state dict.")
+        #
+        # if unexpected_keys:
+        #     print("The following keys in the loaded state dict were not expected by the model:")
+        #     for key in unexpected_keys:
+        #         print(f" - {key}")
+        # else:
+        #     print("No unexpected keys were found in the loaded state dict.")
     sample_size = 10 if debug_mode else None
     eval_sample_size = 10 if debug_mode else args.eval_size
 
