@@ -41,14 +41,14 @@ class CustomDataset(Dataset):
                 self.input_ids, self.labels, self.meta_values, self.attention_masks)
 
     def load_ec_mapping(self, ec_path):
-        ec_to_id = dict()
+        ec_id_to_ec = dict()
         with open(ec_path) as f:
             for line in f:
                 id_, ec, fasta = line.strip().split(",")
                 if fasta == "":
                     continue
-                ec_to_id[ec] = int(id_)
-        self.ec_to_id = ec_to_id
+                ec_id_to_ec[int(id_)] = ec
+        self.ec_id_to_ec = ec_id_to_ec
 
     def load_dataset(self, input_base, split, skip_no_emb):
         with open(f"{input_base}/{split}/src-{split}.txt") as f:
@@ -58,7 +58,7 @@ class CustomDataset(Dataset):
         if os.path.exists(f"{input_base}/{split}/ec-{split}.txt"):
             with open(f"{input_base}/{split}/ec-{split}.txt") as f:
                 ec_lines = f.read().splitlines()
-            ec_lines = [ec if ec in self.ec_to_id else None for ec in ec_lines]
+            ec_lines = [int(ec_id) if int(ec_id) in self.ec_id_to_ec else None for ec_id in ec_lines]
             if skip_no_emb:
                 l_before = len(src_lines)
                 src_lines = [src for src, ec in zip(src_lines, ec_lines) if ec is not None]
