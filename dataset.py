@@ -21,8 +21,6 @@ def dataset_to_ec_path(datasets):
     return "data/ecreact/ec.fasta"
 
 
-
-
 class CustomDataset(Dataset):
     def __init__(self, datasets, split, tokenizer, max_length=128, seed=42, sample_size=None, shuffle=True,
                  skip_no_emb=True, use_ec_tokens=False):
@@ -88,11 +86,10 @@ class CustomDataset(Dataset):
 
         skip_count = 0
         for src, tgt, ec in tqdm(zip(src_lines, tgt_lines, ec_lines), total=len(src_lines)):
-            print(src)
             input_id, attention_mask = encode_bos_eos_pad(self.tokenizer, src, self.max_length)
-            print(input_id)
             label, label_mask = encode_bos_eos_pad(self.tokenizer, tgt, self.max_length)
             if input_id is None or label is None:
+                print(f"Skipping {src}", input_id, label)
                 skip_count += 1
                 continue
 
