@@ -14,7 +14,7 @@ def shuffle_lists(*ls):
 
 class CustomDataset(Dataset):
     def __init__(self, datasets, split, tokenizer, max_length=128, seed=42, sample_size=None, shuffle=True,
-                 ec_path="data/ecreact/ec_to_id.txt", skip_no_emb=False):
+                 ec_path="data/ecreact/ec_to_id.txt", skip_no_emb=True):
         self.tokenizer = tokenizer
         self.load_ec_mapping(ec_path)
         np.random.seed(seed)
