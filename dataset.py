@@ -25,7 +25,12 @@ class CustomDataset(Dataset):
     def __init__(self, datasets, split, tokenizer, max_length=128, seed=42, sample_size=None, shuffle=True,
                  skip_no_emb=True, use_ec_tokens=False):
         self.tokenizer = tokenizer
-        self.load_ec_mapping(dataset_to_ec_path(datasets))
+        self.use_ec_tokens = use_ec_tokens
+
+        if self.use_ec_tokens:
+            skip_no_emb = False
+
+        self.load_ec_mapping(dataset_to_ec_path(datasets), skip_no_emb)
         np.random.seed(seed)
         self.sample_size = sample_size
         self.shuffle = shuffle
@@ -34,21 +39,18 @@ class CustomDataset(Dataset):
         self.labels = []
         self.meta_values = []
         self.max_length = max_length
-        self.use_ec_tokens = use_ec_tokens
-        if self.use_ec_tokens:
-            skip_no_emb = False
         for ds in datasets:
             self.load_dataset(f"data/{ds}", split, skip_no_emb)
         if shuffle:
             self.input_ids, self.labels, self.meta_values, self.attention_masks = shuffle_lists(
                 self.input_ids, self.labels, self.meta_values, self.attention_masks)
 
-    def load_ec_mapping(self, ec_path):
+    def load_ec_mapping(self, ec_path,skip_no_emb):
         ec_id_to_ec = dict()
         with open(ec_path) as f:
             for line in f:
                 id_, ec, fasta = line.strip().split(",")
-                if fasta == "":
+                if fasta == "" and skip_no_emb:
                     continue
                 ec_id_to_ec[int(id_)] = ec
         self.ec_id_to_ec = ec_id_to_ec
