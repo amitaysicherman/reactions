@@ -53,13 +53,13 @@ def eval_gen(model, tokenizer, dataloader):
 
                 pred = tokenizer.decode(outputs[i], skip_special_tokens=True).replace(" ", "")
                 pred_can = canonicalize_smiles_clear_map(pred)
-                if pred_can != "":
-                    can_to_pred[can_gt].append(pred_can)
+                can_to_pred[can_gt].append(pred_can)
 
     flat_correct = []
     per_key_correct = []
     for k, v in can_to_pred.items():
-        max_freq = max(v, key=v.count)
+        v_not_empty = [v_ for v_ in v if v_ != ""]
+        max_freq = max(v_not_empty, key=v.count)
         per_key_correct.append(max_freq == k)
         flat_correct.extend([v_ == k for v_ in v])
     if need_to_restore:
