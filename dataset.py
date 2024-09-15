@@ -89,7 +89,6 @@ class CustomDataset(Dataset):
             input_id, attention_mask = encode_bos_eos_pad(self.tokenizer, src, self.max_length)
             label, label_mask = encode_bos_eos_pad(self.tokenizer, tgt, self.max_length)
             if input_id is None or label is None:
-                print(f"Skipping {src}", input_id, label)
                 skip_count += 1
                 continue
 
