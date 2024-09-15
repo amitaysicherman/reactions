@@ -11,6 +11,7 @@ from model import build_model_by_size_type
 from dataset import CustomDataset
 import torch
 from rdkit import RDLogger
+from tokenizer import add_ec_tokens
 from transformers import TrainerCallback
 
 RDLogger.DisableLog('rdApp.*')
@@ -183,6 +184,7 @@ if __name__ == "__main__":
     parser.add_argument("--gen_size", default=500, type=int)
     parser.add_argument("--eval_size", default=10000, type=int)
     parser.add_argument("--model_cp", default="", type=str)
+    parser.add_argument("--ec_tokens", default=0, type=int)
     args = parser.parse_args()
 
     run_name = args_to_name(args)
@@ -194,6 +196,9 @@ if __name__ == "__main__":
     print(f"Vocabulary size: {tokenizer.vocab_size}")
     special_tokens_dict = {'pad_token': '[PAD]', 'eos_token': '</s>', 'bos_token': '<s>', 'unk_token': '<unk>'}
     num_added_toks = tokenizer.add_special_tokens(special_tokens_dict)
+    if args.ec_tokens:
+        added_tokens_count = add_ec_tokens(tokenizer)
+        num_added_toks += added_tokens_count
     tokenizer_config_args = dict(eos_token_id=tokenizer.eos_token_id, pad_token_id=tokenizer.pad_token_id,
                                  vocab_size=tokenizer.vocab_size + num_added_toks)
     model = build_model_by_size_type(args.size, args.meta_type, **tokenizer_config_args)
@@ -229,24 +234,17 @@ if __name__ == "__main__":
 
     shuffle = not debug_mode
     train_dataset = CustomDataset(args.datasets, "train", tokenizer, max_length, sample_size=sample_size,
-                                  shuffle=shuffle)
+                                  shuffle=shuffle, use_ec_tokens=args.ec_tokens)
 
     eval_datasets = {}
     for dataset in args.datasets:
         eval_datasets[f'train_{dataset}'] = CustomDataset([dataset], "train", tokenizer, max_length,
                                                           sample_size=eval_sample_size,
-                                                          shuffle=shuffle)
+                                                          shuffle=shuffle, use_ec_tokens=args.ec_tokens)
         eval_datasets[f'val_{dataset}'] = CustomDataset([dataset], "val", tokenizer, max_length,
                                                         sample_size=eval_sample_size,
-                                                        shuffle=shuffle)
+                                                        shuffle=shuffle, use_ec_tokens=args.ec_tokens)
 
-    # gen_split = "train" if debug_mode else "val"
-    # gen_size = 10 if debug_mode else args.gen_size
-    # gen_datasets = {}
-    # for dataset in args.datasets:
-    #     ds = CustomDataset([dataset], gen_split, tokenizer, max_length, sample_size=gen_size,
-    #                        shuffle=False)
-    #     gen_datasets[dataset] = DataLoader(ds, batch_size=gen_size, num_workers=0)
     results_dir = "./results_trans/" if args.model_cp else "./results/"
 
     training_args = TrainingArguments(

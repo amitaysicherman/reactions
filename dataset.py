@@ -3,7 +3,7 @@ import os
 from torch.utils.data import Dataset
 import numpy as np
 from tqdm import tqdm
-from tokenizer import encode_bos_eos_pad
+from tokenizer import encode_bos_eos_pad, ec_to_tokens
 
 
 def shuffle_lists(*ls):
@@ -21,19 +21,6 @@ def dataset_to_ec_path(datasets):
     return "data/ecreact/ec.fasta"
 
 
-def ec_to_tokens(ec):
-    return ["<|>"] + [f"<ec{i}-{v}>" for i, v in enumerate(ec.split("."), 1)]
-
-
-def get_ec_tokens(ec_path):
-    ec_tokens = []
-    with open(ec_path) as f:
-        for line in f:
-            id_, ec, fasta = line.strip().split(",")
-            ec_tokens.extend(ec_to_tokens(ec))
-    ec_tokens = list(set(ec_tokens))
-    print(f"Number of unique EC tokens: {len(ec_tokens)}")
-    return ec_tokens
 
 
 class CustomDataset(Dataset):
@@ -50,8 +37,6 @@ class CustomDataset(Dataset):
         self.meta_values = []
         self.max_length = max_length
         self.use_ec_tokens = use_ec_tokens
-        if self.use_ec_tokens:
-            self.tokenizer.add_tokens(get_ec_tokens(dataset_to_ec_path(datasets)))
         for ds in datasets:
             self.load_dataset(f"data/{ds}", split, skip_no_emb)
         if shuffle:
