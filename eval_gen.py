@@ -114,7 +114,6 @@ if __name__ == "__main__":
     max_length = 200
     tokenizer_file = f"{cp_dir}/tokenizer.json"
     tokenizer = PreTrainedTokenizerFast(tokenizer_file=tokenizer_file, model_max_length=max_length)
-    print(tokenizer,tokenizer.special_tokens_map)
     if args.debug_mode:
         sample_size = 100
     else:
