@@ -68,7 +68,7 @@ class CustomDataset(Dataset):
                 tgt_lines = [tgt for tgt, ec in zip(tgt_lines, ec_lines) if ec is not None]
                 ec_lines = [ec for ec in ec_lines if ec is not None]
                 l_after = len(src_lines)
-                print(f"Dataset :{input_base}, split: {split}, skipped: {l_before - l_after}/{l_before}")
+                print(f"Dataset :{input_base}, split: {split}, no_ec_emd: {l_before - l_after}/{l_before}")
         else:
             ec_lines = [0] * len(src_lines)
         if self.use_ec_tokens:
