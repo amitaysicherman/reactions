@@ -429,15 +429,21 @@ if __name__ == '__main__':
                 map(lambda x: x.split(' ')[0], product_smarts_list))
             save_dir = os.path.join(savedir, data_set)
             if args.dataset == 'ecreact' or args.dataset == 'bkms':
-                ec_list = list(map(lambda x: x.split(' ')[1], reaction_list))
-                ec_list = list(map(lambda x: x.strip(), ec_list))
+                if args.dataset == 'bkms':
+                    with open(os.path.join(datadir, f"ec-{data_set}.txt"), "r") as f:
+                        ec_list = f.readlines()
+                        ec_list = list(map(lambda x: x.strip(), ec_list))
+                else:
+                    ec_list = list(map(lambda x: x.split(' ')[1], reaction_list))
+                    ec_list = list(map(lambda x: x.strip(), ec_list))
                 with open(os.path.join(save_dir, f"ec-{data_set}.txt"), "w") as f:
                     for ec in ec_list:
                         for _ in range(args.augmentation):
                             f.write(f"{ec}\n")
                 # remove stereochemistry:
-                reactant_smarts_list = list(map(clear_stereochemistry, reactant_smarts_list))
-                product_smarts_list = list(map(clear_stereochemistry, product_smarts_list))
+                # reactant_smarts_list = list(map(clear_stereochemistry, reactant_smarts_list))
+                # product_smarts_list = list(map(clear_stereochemistry, product_smarts_list))
+
             if args.direction == "PtoR":
                 multiple_product_indices = [i for i in range(len(product_smarts_list)) if "." in product_smarts_list[i]]
                 for index in multiple_product_indices:
