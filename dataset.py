@@ -14,7 +14,7 @@ def shuffle_lists(*ls):
 
 class CustomDataset(Dataset):
     def __init__(self, datasets, split, tokenizer, max_length=128, seed=42, sample_size=None, shuffle=True,
-                 ec_path="data/ec_to_id.txt"):
+                 ec_path="data/ec_to_id.txt", skip_no_ec=False):
         self.tokenizer = tokenizer
         self.load_ec_mapping(ec_path)
         np.random.seed(seed)
@@ -26,7 +26,7 @@ class CustomDataset(Dataset):
         self.meta_values = []
         self.max_length = max_length
         for ds in datasets:
-            self.load_dataset(f"data/{ds}", split)
+            self.load_dataset(f"data/{ds}", split, skip_no_ec)
         if shuffle:
             self.input_ids, self.labels, self.meta_values, self.attention_masks = shuffle_lists(
                 self.input_ids, self.labels, self.meta_values, self.attention_masks)
@@ -35,11 +35,13 @@ class CustomDataset(Dataset):
         ec_to_id = dict()
         with open(ec_path) as f:
             for line in f:
-                ec, id_ = line.strip().split(",")
+                id_, ec, fasta = line.strip().split(",")
+                if fasta == "":
+                    continue
                 ec_to_id[ec] = int(id_)
         self.ec_to_id = ec_to_id
 
-    def load_dataset(self, input_base, split):
+    def load_dataset(self, input_base, split, skip_no_ec):
         with open(f"{input_base}/{split}/src-{split}.txt") as f:
             src_lines = f.read().splitlines()
         with open(f"{input_base}/{split}/tgt-{split}.txt") as f:
@@ -47,7 +49,11 @@ class CustomDataset(Dataset):
         if os.path.exists(f"{input_base}/{split}/ec-{split}.txt"):
             with open(f"{input_base}/{split}/ec-{split}.txt") as f:
                 ec_lines = f.read().splitlines()
-            ec_lines = [self.ec_to_id[ec] for ec in ec_lines]
+            ec_lines = [self.ec_to_id.get(ec, None) for ec in ec_lines]
+            if skip_no_ec:
+                src_lines = [src for src, ec in zip(src_lines, ec_lines) if ec is not None]
+                tgt_lines = [tgt for tgt, ec in zip(tgt_lines, ec_lines) if ec is not None]
+                ec_lines = [ec for ec in ec_lines if ec is not None]
         else:
             ec_lines = [0] * len(src_lines)
 
