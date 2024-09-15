@@ -29,44 +29,6 @@ def canonicalize_smiles_clear_map(smiles):
     return cam_smiles
 
 
-def eval_gen(model, tokenizer, dataloader):
-    can_to_pred = defaultdict(list)
-    need_to_restore = False
-    if model.training:
-        model.eval()
-        need_to_restore = True
-    with torch.no_grad():
-        for batch in dataloader:
-            input_ids = batch['input_ids'].to(model.device)
-            labels_ = batch['labels'].cpu().numpy()
-            labels = [l[l != -100] for l in labels_]
-
-            attention_mask = batch['attention_mask'].to(model.device)
-
-            meta = batch['meta'].to(model.device)
-            outputs = model.generate(input_ids=input_ids, attention_mask=attention_mask, meta=meta,
-                                     max_length=tokenizer.model_max_length, do_sample=False, num_beams=10)
-
-            for i in range(len(labels)):
-                gt = tokenizer.decode(labels[i], skip_special_tokens=True).replace(" ", "")
-                can_gt = canonicalize_smiles_clear_map(gt)
-
-                pred = tokenizer.decode(outputs[i], skip_special_tokens=True).replace(" ", "")
-                pred_can = canonicalize_smiles_clear_map(pred)
-                can_to_pred[can_gt].append(pred_can)
-
-    flat_correct = []
-    per_key_correct = []
-    for k, v in can_to_pred.items():
-        v_not_empty = [v_ for v_ in v if v_ != ""]
-        max_freq = max(v_not_empty, key=v.count)
-        per_key_correct.append(max_freq == k)
-        flat_correct.extend([v_ == k for v_ in v])
-    if need_to_restore:
-        model.train()
-    return np.mean(flat_correct), np.mean(per_key_correct)
-
-
 def is_valid_smiles(smiles):
     smiles = smiles.replace(" ", "")
 
@@ -78,7 +40,7 @@ def is_valid_smiles(smiles):
     return molecule is not None
 
 
-def compute_metrics(eval_pred):  # model, tokenizer, gen_dataloaders
+def compute_metrics(eval_pred):
     predictions_, labels_ = eval_pred
     predictions_ = np.argmax(predictions_[0], axis=-1)
     token_acc = []
@@ -97,20 +59,7 @@ def compute_metrics(eval_pred):  # model, tokenizer, gen_dataloaders
     token_acc = np.mean(token_acc)
     accuracy = np.mean(accuracy)
     is_valid = np.mean(is_valid)
-
-    # gen_dic_res = {}
-    # for dataset, _ in gen_dataloaders.items():
-    #     gen_dic_res['gen_acc_' + dataset] = 0
-    #     gen_dic_res['gen_aug_acc_' + dataset] = 0
-    #
-    # global one_in_two
-    # one_in_two += 1
-    # if one_in_two % 2 * len(gen_dataloaders) == 1:
-    #     for dataset, gen_dataloader in gen_dataloaders.items():
-    #         gen_dic_res['gen_acc_' + dataset], gen_dic_res['gen_aug_acc_' + dataset] = eval_gen(model, tokenizer,
-    #                                                                                             gen_dataloader)
-
-    return {"accuracy": accuracy, "valid_smiles": is_valid, "token_acc": token_acc}  # **gen_dic_res
+    return {"accuracy": accuracy, "valid_smiles": is_valid, "token_acc": token_acc}
 
 
 def args_to_name(args):
@@ -183,14 +132,14 @@ if __name__ == "__main__":
     parser.add_argument("--learning_rate", default=5e-5, type=float)
     parser.add_argument("--num_train_epochs", default=10, type=int)
     parser.add_argument("--gen_size", default=500, type=int)
-    parser.add_argument("--eval_size", default=10000, type=int)
+    parser.add_argument("--eval_size", default=1000, type=int)
     parser.add_argument("--model_cp", default="", type=str)
     parser.add_argument("--ec_tokens", default=0, type=int)
     parser.add_argument("--skip_no_emb", default=1, type=int)
     parser.add_argument("--exp_name", default="results", type=str)
 
     args = parser.parse_args()
-
+    print(args.datasets)
     run_name = args_to_name(args)
     max_length = args.max_length
     tokenizer_file = args.tokenizer_file
