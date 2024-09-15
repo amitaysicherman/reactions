@@ -2,6 +2,7 @@ import torch
 import re
 from transformers import T5Tokenizer, T5EncoderModel, AutoTokenizer, BertForMaskedLM, BertTokenizer, EsmModel
 import numpy as np
+from tqdm import tqdm
 MAX_LEN = 510
 PROTEIN_MAX_LEN = 1023
 
@@ -117,7 +118,7 @@ if __name__ == '__main__':
             id, ec, fasta = line.strip().split(",")
             all_fastas.append(fasta)
     all_vecs = []
-    for fasta in all_fastas:
+    for fasta in tqdm(all_fastas):
         vec = prot2vec.to_vec(fasta)  # (1,dim)
         all_vecs.append(vec)
     all_vecs = np.concatenate(all_vecs, axis=0)
