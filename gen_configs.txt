@@ -12,4 +12,4 @@
  --model_cp results/trans_all/transfer_ds-ecreact_RtoP_aug10_s-l_m-3_l-180_b-60_ec_tokens-0_skip_no_emb-1 --ec_tokens 0 --skip_no_emb 1 --dataset ecreact_RtoP_aug10
 
 
- --model_cp results/transfer_ds-ecreact_RtoP_aug10_s-l_m-0_l-175_b-64 --ec_tokens 0 --skip_no_emb 0 --dataset ecreact_RtoP_aug10
+ --model_cp results_trans/transfer_ds-ecreact_RtoP_aug10_s-l_m-0_l-175_b-64 --ec_tokens 0 --skip_no_emb 0 --dataset ecreact_RtoP_aug10
