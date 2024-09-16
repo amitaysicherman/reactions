@@ -93,7 +93,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--model_cp", default="", type=str)
     parser.add_argument("--dataset", default='ecreact_PtoR_aug10', type=str)
-    parser.add_argument("--batch_size", default=8, type=int)
+    parser.add_argument("--batch_size", default=64, type=int)
     parser.add_argument("--debug_mode", default=0, type=int)
     parser.add_argument("--ec_tokens", default=0, type=int)
     parser.add_argument("--skip_no_emb", default=1, type=int)
